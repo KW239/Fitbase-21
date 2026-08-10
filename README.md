@@ -55,3 +55,12 @@ your account is the only one that will ever exist.
   past session** to backfill an old workout (pick the day and date, fill in
   sets), or open any existing session and tap **Edit session** to add/remove
   sets, change weights/reps/RPE, fix the date, or add a note after the fact.
+- **Works with no signal.** The app caches your program and history on the
+  device after each successful load, so opening it offline still works off
+  the last-known data. Anything you log while offline (or if a save fails
+  for any reason) is saved to the device immediately and queued — it syncs
+  to Supabase automatically the moment you're back online, or via a "Retry
+  now" button if a sync attempt fails. A banner at the top of the app shows
+  offline/pending-sync status; unsynced sessions show a "NOT SYNCED" tag in
+  History until they've synced (at which point editing/deleting them opens
+  up as normal).

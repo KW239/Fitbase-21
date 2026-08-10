@@ -47,7 +47,40 @@ const S = {
   editingDayId: null, exerciseForm: null,
   sessionAnim: false, detailAnim: false,
   pickDay: false, editor: null,
+  serverSessions: [], pendingSessions: [], syncing: false,
 };
+
+// ---- local persistence (offline support) ----
+// Keeps a device-local copy of the last-loaded program/sessions (so the app
+// still works if opened with no signal) plus two things that must never be
+// lost to a dropped connection: the in-progress workout draft, and finished
+// sessions that haven't reached Supabase yet.
+function lsKey(name) { return 'capacity_' + name + '_' + (S.user ? S.user.id : 'anon'); }
+function lsGet(name, fallback) {
+  try { const raw = localStorage.getItem(lsKey(name)); return raw ? JSON.parse(raw) : fallback; } catch (e) { return fallback; }
+}
+function lsSet(name, val) {
+  try { localStorage.setItem(lsKey(name), JSON.stringify(val)); } catch (e) { /* storage unavailable — degrade silently */ }
+}
+function lsRemove(name) {
+  try { localStorage.removeItem(lsKey(name)); } catch (e) {}
+}
+function uuid() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+// S.sessions is always derived: server-confirmed sessions plus any still-local
+// (unsynced) ones, deduped by id and kept in chronological order. Every view
+// reads S.sessions, so pending workouts show up everywhere automatically.
+function computeSessions() {
+  const map = new Map();
+  S.serverSessions.forEach(s => map.set(s.id, s));
+  S.pendingSessions.forEach(s => { if (!map.has(s.id)) map.set(s.id, s); });
+  S.sessions = [...map.values()].sort((a, b) => new Date(a.performed_at) - new Date(b.performed_at));
+}
 
 // ---- helpers ----
 function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
@@ -148,6 +181,7 @@ function render() {
 
   app.innerHTML = `
     <div class="shell">
+      ${syncBanner()}
       <div class="content">${mainView()}</div>
       <div class="tab-bar"><div class="tab-bar-inner">${tabBar()}</div></div>
     </div>
@@ -171,6 +205,24 @@ function mainView() {
     case 'settings': return viewSettings();
     default: return viewToday();
   }
+}
+
+function syncBanner() {
+  const offline = !navigator.onLine;
+  const pendingCount = S.pendingSessions.length;
+  if (!offline && !pendingCount) return '';
+  let text, action = '';
+  if (offline && pendingCount) {
+    text = `Offline — ${pendingCount} session${pendingCount > 1 ? 's' : ''} saved on this device, will sync automatically.`;
+  } else if (offline) {
+    text = `Offline — anything you log now is saved on this device and will sync automatically.`;
+  } else if (S.syncing) {
+    text = `Syncing ${pendingCount} session${pendingCount > 1 ? 's' : ''}…`;
+  } else {
+    text = `${pendingCount} session${pendingCount > 1 ? 's' : ''} waiting to sync.`;
+    action = `<button class="sync-retry-btn" onclick="App.syncPendingQueue()">Retry now</button>`;
+  }
+  return `<div class="sync-banner">${esc(text)}${action}</div>`;
 }
 
 function tabBar() {
@@ -250,22 +302,41 @@ async function submitAuth() {
 async function signOut() { await sb.auth.signOut(); }
 
 // ---- data loading ----
+// Each loader tries the network first and caches the result locally on
+// success; if the request fails (offline, timeout, etc.) it falls back to
+// whatever was last cached, so opening the app with no signal still works
+// off the last-known data instead of getting stuck.
 async function loadProfile() {
-  const { data } = await sb.from('profiles').select('full_name,bodyweight_kg').eq('id', S.user.id).maybeSingle();
-  if (data) { S.fullName = data.full_name || ''; S.bodyweight = +data.bodyweight_kg || 80; }
+  try {
+    const { data, error } = await sb.from('profiles').select('full_name,bodyweight_kg').eq('id', S.user.id).maybeSingle();
+    if (error) throw error;
+    if (data) {
+      S.fullName = data.full_name || ''; S.bodyweight = +data.bodyweight_kg || 80;
+      lsSet('profile', { fullName: S.fullName, bodyweight: S.bodyweight });
+    }
+  } catch (e) {
+    const cached = lsGet('profile', null);
+    if (cached) { S.fullName = cached.fullName; S.bodyweight = cached.bodyweight; }
+  }
 }
 async function loadProgram() {
-  const { data, error } = await sb.from('program_days')
-    .select('id,name,sort_order,program_exercises(id,name,sets,rep_lo,rep_hi,base_weight,increment,per_leg,bodyweight,sort_order)')
-    .order('sort_order');
-  if (error) { console.error(error); return; }
-  S.days = (data || []).map(d => ({
-    id: d.id, name: d.name, sort_order: d.sort_order,
-    exercises: (d.program_exercises || []).slice().sort((a, b) => a.sort_order - b.sort_order),
-  }));
+  try {
+    const { data, error } = await sb.from('program_days')
+      .select('id,name,sort_order,program_exercises(id,name,sets,rep_lo,rep_hi,base_weight,increment,per_leg,bodyweight,sort_order)')
+      .order('sort_order');
+    if (error) throw error;
+    S.days = (data || []).map(d => ({
+      id: d.id, name: d.name, sort_order: d.sort_order,
+      exercises: (d.program_exercises || []).slice().sort((a, b) => a.sort_order - b.sort_order),
+    }));
+    lsSet('days', S.days);
+  } catch (e) {
+    S.days = lsGet('days', S.days);
+  }
 }
 async function seedDefaultProgramIfEmpty() {
   if (S.days.length) return;
+  if (!navigator.onLine) return; // nothing to seed against offline — retried on next successful load
   for (let i = 0; i < DEFAULT_PROGRAM.length; i++) {
     const day = DEFAULT_PROGRAM[i];
     const { data: dayRow, error } = await sb.from('program_days').insert({ user_id: S.user.id, name: day.name, sort_order: i }).select().single();
@@ -279,23 +350,32 @@ async function seedDefaultProgramIfEmpty() {
   await loadProgram();
 }
 async function loadSessions() {
-  const { data, error } = await sb.from('sessions')
-    .select('id,day_id,day_name,performed_at,session_entries(id,exercise_id,exercise_name,per_leg,bodyweight,rpe,note,sort_order,session_sets(set_num,weight,reps))')
-    .order('performed_at');
-  if (error) { console.error(error); return; }
-  S.sessions = (data || []).map(s => ({
-    id: s.id, day_id: s.day_id, day_name: s.day_name, performed_at: s.performed_at,
-    entries: (s.session_entries || []).slice().sort((a, b) => a.sort_order - b.sort_order).map(e => ({
-      id: e.id, exercise_id: e.exercise_id, exercise_name: e.exercise_name, per_leg: e.per_leg, bodyweight: e.bodyweight,
-      rpe: e.rpe, note: e.note,
-      sets: (e.session_sets || []).slice().sort((a, b) => a.set_num - b.set_num).map(x => ({ set_num: x.set_num, weight: +x.weight, reps: +x.reps })),
-    })),
-  }));
+  try {
+    const { data, error } = await sb.from('sessions')
+      .select('id,day_id,day_name,performed_at,session_entries(id,exercise_id,exercise_name,per_leg,bodyweight,rpe,note,sort_order,session_sets(set_num,weight,reps))')
+      .order('performed_at');
+    if (error) throw error;
+    S.serverSessions = (data || []).map(s => ({
+      id: s.id, day_id: s.day_id, day_name: s.day_name, performed_at: s.performed_at,
+      entries: (s.session_entries || []).slice().sort((a, b) => a.sort_order - b.sort_order).map(e => ({
+        id: e.id, exercise_id: e.exercise_id, exercise_name: e.exercise_name, per_leg: e.per_leg, bodyweight: e.bodyweight,
+        rpe: e.rpe, note: e.note,
+        sets: (e.session_sets || []).slice().sort((a, b) => a.set_num - b.set_num).map(x => ({ set_num: x.set_num, weight: +x.weight, reps: +x.reps })),
+      })),
+    }));
+    lsSet('server_sessions', S.serverSessions);
+  } catch (e) {
+    S.serverSessions = lsGet('server_sessions', S.serverSessions);
+  }
+  computeSessions();
 }
 async function loadAll() {
+  S.pendingSessions = lsGet('pending', []);
   await Promise.all([loadProfile(), loadProgram()]);
   await seedDefaultProgramIfEmpty();
-  await loadSessions();
+  await loadSessions(); // also computes S.sessions
+  restoreActiveDraft();
+  syncPendingQueue();
 }
 async function reloadProgram() { await loadProgram(); render(); }
 async function reloadSessions() { await loadSessions(); }
@@ -312,10 +392,14 @@ sb.auth.onAuthStateChange(async (event, session) => {
     }
     render();
   } else {
-    S.user = null; S.days = []; S.sessions = []; S.view = 'today'; S.active = null; S.loading = false;
+    stopTimer();
+    S.user = null; S.days = []; S.sessions = []; S.serverSessions = []; S.pendingSessions = [];
+    S.view = 'today'; S.active = null; S.loading = false;
     render(); attachAuthEvents();
   }
 });
+window.addEventListener('online', () => syncPendingQueue());
+window.addEventListener('offline', () => render());
 (async function boot() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { S.loading = false; render(); attachAuthEvents(); }
@@ -525,12 +609,14 @@ function viewHistory() {
       <div class="hist-card">
         <div class="hist-top" onclick="App.toggleHistory('${s.id}')">
           <div style="flex:1">
-            <div class="hist-title">Week ${weekIndexOf(s.performed_at)} · ${esc(s.day_name)}</div>
+            <div class="hist-title" style="display:flex;align-items:center;gap:7px">Week ${weekIndexOf(s.performed_at)} · ${esc(s.day_name)}${s.pending ? '<span class="pending-badge">NOT SYNCED</span>' : ''}</div>
             <div class="hist-sub">${dfmt(s.performed_at)} · ${nf(vol)} kg · ${setCount} sets</div>
           </div>
           <div class="hist-chev">${open ? '▲' : '▼'}</div>
         </div>
-        ${open ? `<div class="hist-lines">${lines}</div><div class="hist-actions"><button class="hist-edit" onclick="App.startEditorEdit('${s.id}')">Edit session</button><button class="hist-del" onclick="App.deleteSession('${s.id}')">Delete this session</button></div>` : ''}
+        ${open ? `<div class="hist-lines">${lines}</div>${s.pending
+          ? `<div class="hist-pending-note">Saved on this device — will finish syncing once you're back online.</div>`
+          : `<div class="hist-actions"><button class="hist-edit" onclick="App.startEditorEdit('${s.id}')">Edit session</button><button class="hist-del" onclick="App.deleteSession('${s.id}')">Delete this session</button></div>`}` : ''}
       </div>`;
   }).join('');
 
@@ -843,6 +929,23 @@ function detailOverlay() {
 }
 
 // ---- session flow ----
+// The active workout draft is persisted to localStorage on every change so
+// a dropped connection, a backgrounded tab, or iOS reclaiming the page mid-
+// workout never loses what's been entered — reopening the app restores it.
+function persistActiveDraft() {
+  if (!S.active) { lsRemove('active_draft'); return; }
+  lsSet('active_draft', { active: S.active, expanded: S.expanded });
+}
+function restoreActiveDraft() {
+  if (S.active) return; // already mid-session in memory
+  const saved = lsGet('active_draft', null);
+  if (saved && saved.active) {
+    S.active = saved.active;
+    S.expanded = saved.expanded || null;
+    S.elapsed = Math.max(0, Math.floor((Date.now() - (S.active.startedAt || Date.now())) / 1000));
+    startTimer();
+  }
+}
 function startSession(dayId) {
   const day = S.days.find(d => d.id === dayId);
   if (!day || !day.exercises.length) { alert('Add exercises to this day in Settings first.'); return; }
@@ -850,17 +953,19 @@ function startSession(dayId) {
   day.exercises.forEach(ex => {
     log[ex.id] = { sets: Array.from({ length: ex.sets }, () => ({ w: '', r: '', done: false })), sug: suggestFor(ex), rpe: null, note: '' };
   });
-  S.active = { dayId, dayName: day.name, log };
+  S.active = { localId: uuid(), dayId, dayName: day.name, log, startedAt: Date.now() };
   S.expanded = day.exercises[0].id;
   S.elapsed = 0;
   S.sessionAnim = true;
+  persistActiveDraft();
   startTimer();
   render();
 }
 function startTimer() {
   stopTimer();
   S.timerHandle = setInterval(() => {
-    S.elapsed++;
+    if (!S.active) return;
+    S.elapsed = Math.max(0, Math.floor((Date.now() - S.active.startedAt) / 1000));
     const el = document.getElementById('sessionClock');
     if (el) el.textContent = fmtClock(S.elapsed);
   }, 1000);
@@ -868,11 +973,11 @@ function startTimer() {
 function stopTimer() { if (S.timerHandle) clearInterval(S.timerHandle); S.timerHandle = null; }
 function exitSession() {
   if (!confirm('Discard this session? Your entries will be lost.')) return;
-  S.active = null; stopTimer(); render();
+  S.active = null; lsRemove('active_draft'); stopTimer(); render();
 }
-function toggleExpand(exId) { S.expanded = S.expanded === exId ? null : exId; render(); }
-function setField(exId, idx, key, val) { S.active.log[exId].sets[idx][key] = val; }
-function setNote(exId, val) { S.active.log[exId].note = val; }
+function toggleExpand(exId) { S.expanded = S.expanded === exId ? null : exId; persistActiveDraft(); render(); }
+function setField(exId, idx, key, val) { S.active.log[exId].sets[idx][key] = val; persistActiveDraft(); }
+function setNote(exId, val) { S.active.log[exId].note = val; persistActiveDraft(); }
 function toggleSetDone(exId, idx) {
   const L = S.active.log[exId];
   const s = L.sets[idx];
@@ -881,9 +986,10 @@ function toggleSetDone(exId, idx) {
     if (s.w === '') s.w = String(L.sug.weight);
     if (s.r === '') s.r = String(L.sug.reps);
   }
+  persistActiveDraft();
   render();
 }
-function pickRpe(exId, n) { S.active.log[exId].rpe = n; render(); }
+function pickRpe(exId, n) { S.active.log[exId].rpe = n; persistActiveDraft(); render(); }
 
 function sessionOverlay() {
   const day = S.days.find(d => d.id === S.active.dayId);
@@ -945,7 +1051,7 @@ function sessionOverlay() {
         <button class="back-btn" onclick="App.exitSession()">←</button>
         <div style="flex:1">
           <div style="font-size:16.5px;font-weight:600;line-height:1.2">Capacity · ${esc(day.name)}</div>
-          <div style="font-size:12.5px;color:var(--muted)">Week ${week} · ${filled}/${total} sets</div>
+          <div style="font-size:12.5px;color:var(--muted)">Week ${week} · ${filled}/${total} sets${navigator.onLine ? '' : ' · offline, saved on this device'}</div>
         </div>
         <div id="sessionClock" style="font-size:13px;font-weight:600;color:${ACC};font-variant-numeric:tabular-nums">${fmtClock(S.elapsed)}</div>
       </div>
@@ -958,6 +1064,12 @@ function sessionOverlay() {
   </div></div>`;
 }
 
+// Finishing a session never waits on the network: it's computed and shown
+// immediately from local data, queued to localStorage, and synced to
+// Supabase in the background (immediately if online, automatically once
+// back online otherwise). This is what makes logging a workout reliable
+// with no signal — nothing is lost, and nothing blocks on a request that
+// might never complete.
 async function finishSession() {
   const day = S.days.find(d => d.id === S.active.dayId);
   const log = S.active.log;
@@ -966,44 +1078,79 @@ async function finishSession() {
   const prevBest = {};
   day.exercises.forEach(ex => { const ser = seriesFor(ex.id); prevBest[ex.id] = ser.length ? Math.max(...ser.map(x => x.orm)) : 0; });
 
-  const { data: sessionRow, error: sErr } = await sb.from('sessions')
-    .insert({ user_id: S.user.id, day_id: day.id, day_name: day.name, performed_at: new Date().toISOString() })
-    .select().single();
-  if (sErr) { alert('Could not save session: ' + sErr.message); startTimer(); return; }
-
-  const doneEntries = [];
-  for (let i = 0; i < day.exercises.length; i++) {
-    const ex = day.exercises[i];
+  const entries = day.exercises.map((ex, i) => {
     const L = log[ex.id];
-    const setRows = L.sets.map((s, j) => ({
+    const sets = L.sets.map((s, j) => ({
       set_num: j + 1,
       weight: s.w !== '' ? Math.max(0, +s.w || 0) : L.sug.weight,
       reps: s.r !== '' ? Math.max(0, +s.r || 0) : (s.done ? L.sug.reps : 0),
     }));
-    const { data: entryRow, error: eErr } = await sb.from('session_entries')
-      .insert({ user_id: S.user.id, session_id: sessionRow.id, exercise_id: ex.id, exercise_name: ex.name, per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight, rpe: L.rpe, note: L.note || null, sort_order: i })
-      .select().single();
-    if (eErr) { console.error(eErr); continue; }
-    const setPayload = setRows.map(r => ({ user_id: S.user.id, entry_id: entryRow.id, set_num: r.set_num, weight: r.weight, reps: r.reps }));
-    await sb.from('session_sets').insert(setPayload);
-    doneEntries.push({ ex, sets: setRows });
-  }
+    return { ex, exercise_id: ex.id, exercise_name: ex.name, per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight, rpe: L.rpe, note: L.note || null, sort_order: i, sets };
+  });
 
-  const load = (ex, r) => (ex.bodyweight ? S.bodyweight : 0) + r.weight;
-  const vol = doneEntries.reduce((a, e) => a + e.sets.reduce((b, r) => b + load(e.ex, r) * r.reps, 0), 0);
-  const setsCount = doneEntries.reduce((a, e) => a + e.sets.length, 0);
-  const prs = doneEntries.map(e => {
-    const o = Math.max(...e.sets.map(r => orm(load(e.ex, r), r.reps)));
-    if (o <= (prevBest[e.ex.id] || 0) + 0.01) return null;
+  const load = (e, r) => (e.bodyweight ? S.bodyweight : 0) + r.weight;
+  const vol = entries.reduce((a, e) => a + e.sets.reduce((b, r) => b + load(e, r) * r.reps, 0), 0);
+  const setsCount = entries.reduce((a, e) => a + e.sets.length, 0);
+  const prs = entries.map(e => {
+    const o = Math.max(...e.sets.map(r => orm(load(e, r), r.reps)));
+    if (o <= (prevBest[e.exercise_id] || 0) + 0.01) return null;
     const top = topSetOf(e.sets);
-    return { name: e.ex.name, val: fmtWeight(e.ex, top.weight) + ' × ' + top.reps };
+    return { name: e.exercise_name, val: fmtWeight(e.ex, top.weight) + ' × ' + top.reps };
   }).filter(Boolean);
 
+  const pendingItem = {
+    id: S.active.localId || uuid(), pending: true,
+    day_id: day.id, day_name: day.name, performed_at: new Date().toISOString(),
+    entries: entries.map(({ ex, ...rest }) => rest),
+  };
+  S.pendingSessions.push(pendingItem);
+  lsSet('pending', S.pendingSessions);
+  computeSessions();
+
   S.active = null;
+  lsRemove('active_draft');
   S.showDone = true;
   S.doneData = { name: day.name, vol, sets: setsCount, prs };
-  await reloadSessions();
   render();
+
+  syncPendingQueue();
+}
+
+async function syncPendingQueue() {
+  if (!S.user || S.syncing || !S.pendingSessions.length || !navigator.onLine) return;
+  S.syncing = true;
+  let anySynced = false;
+  for (const item of [...S.pendingSessions]) {
+    try {
+      await syncOneSession(item);
+      S.pendingSessions = S.pendingSessions.filter(p => p.id !== item.id);
+      lsSet('pending', S.pendingSessions);
+      anySynced = true;
+    } catch (err) {
+      console.error('Sync failed for session', item.id, err);
+      // leave it queued — will retry on the next sync pass (reconnect, reload, or manual retry)
+    }
+  }
+  S.syncing = false;
+  if (anySynced) { await loadSessions(); }
+  render();
+}
+async function syncOneSession(item) {
+  const { error: sErr } = await sb.from('sessions')
+    .upsert({ id: item.id, user_id: S.user.id, day_id: item.day_id, day_name: item.day_name, performed_at: item.performed_at }, { onConflict: 'id' });
+  if (sErr) throw sErr;
+  // Replace any entries from a previous partial attempt so retries stay idempotent.
+  const { error: delErr } = await sb.from('session_entries').delete().eq('session_id', item.id);
+  if (delErr) throw delErr;
+  for (const e of item.entries) {
+    const { data: entryRow, error: eErr } = await sb.from('session_entries')
+      .insert({ user_id: S.user.id, session_id: item.id, exercise_id: e.exercise_id, exercise_name: e.exercise_name, per_leg: e.per_leg, bodyweight: e.bodyweight, rpe: e.rpe, note: e.note, sort_order: e.sort_order })
+      .select().single();
+    if (eErr) throw eErr;
+    const setPayload = e.sets.map(s => ({ user_id: S.user.id, entry_id: entryRow.id, set_num: s.set_num, weight: s.weight, reps: s.reps }));
+    const { error: setErr } = await sb.from('session_sets').insert(setPayload);
+    if (setErr) throw setErr;
+  }
 }
 
 function closeDone() { S.showDone = false; S.doneData = null; S.view = 'progress'; render(); }
@@ -1184,7 +1331,7 @@ window.App = {
   openLogPast, closePickDay, startEditorNew, startEditorEdit, closeEditor,
   setEditorDate, setEditorSetField, addEditorSet, removeEditorSet, pickEditorRpe, setEditorNote,
   saveEditor, deleteEditorSession,
-  closeDone, signOut,
+  closeDone, signOut, syncPendingQueue,
   addDay, renameDay, deleteDay, moveDay, saveBodyweight,
   openExerciseForm, closeExerciseForm, setExField, toggleExField, saveExerciseForm, deleteExerciseForm,
 };
