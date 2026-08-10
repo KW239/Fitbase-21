@@ -51,3 +51,7 @@ your account is the only one that will ever exist.
 - Suggested weight/reps for each exercise are based on your most recent logged
   session for that exercise (add a rep until you hit the top of the rep range,
   then add weight and drop back to the bottom).
+- Missed logging a session, or forgot a set? From **History**, use **+ Log a
+  past session** to backfill an old workout (pick the day and date, fill in
+  sets), or open any existing session and tap **Edit session** to add/remove
+  sets, change weights/reps/RPE, fix the date, or add a note after the fact.

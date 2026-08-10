@@ -145,8 +145,22 @@ button{font-family:inherit}
 .hist-line{display:flex;justify-content:space-between;gap:12px;font-size:13.5px}
 .hist-line .n{color:#6E6357;flex:1}
 .hist-line .v{font-weight:600;font-variant-numeric:tabular-nums}
-.hist-del{margin-top:10px;background:none;border:none;color:var(--faint);font-size:12px;cursor:pointer;padding:4px 0}
+.hist-actions{display:flex;gap:16px;margin-top:10px}
+.hist-del{background:none;border:none;color:var(--faint);font-size:12px;cursor:pointer;padding:4px 0}
 .hist-del:hover{color:var(--accent)}
+.hist-edit{background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;padding:4px 0}
+.log-past-btn{width:100%;background:none;border:1.5px dashed var(--border);border-radius:16px;padding:14px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;margin-bottom:16px}
+.log-past-btn:hover{color:var(--accent);border-color:var(--accent)}
+.day-pick-btn{background:var(--card);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;border:none;width:100%;text-align:left;margin-top:10px}
+.day-pick-btn:hover{background:#FFF9EF}
+.editor-set-row{display:flex;gap:8px;align-items:center;margin-bottom:7px}
+.set-remove-btn{width:34px;height:46px;border-radius:13px;background:none;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--faint);cursor:pointer;flex-shrink:0}
+.set-remove-btn:hover{color:var(--accent);border-color:var(--accent)}
+.add-set-link{background:none;border:1.5px dashed var(--border);border-radius:12px;padding:9px;width:100%;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;margin-top:2px}
+.add-set-link:hover{color:var(--accent);border-color:var(--accent)}
+.date-field{width:100%;box-sizing:border-box;height:48px;border-radius:13px;border:1.5px solid var(--border);background:#FBF7EF;padding:0 14px;font-size:15px;color:var(--ink);outline:none}
+.editor-ex-block{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.editor-ex-block:first-child{margin-top:0;padding-top:0;border-top:none}
 
 /* ---- tab bar ---- */
 .tab-bar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center}

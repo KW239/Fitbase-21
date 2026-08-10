@@ -46,6 +46,7 @@ const S = {
   showDone: false, doneData: null,
   editingDayId: null, exerciseForm: null,
   sessionAnim: false, detailAnim: false,
+  pickDay: false, editor: null,
 };
 
 // ---- helpers ----
@@ -60,6 +61,18 @@ function orm(load, reps) { return load * (1 + (+reps || 0) / 30); }
 function mondayOf(d) { const dt = new Date(d); const day = (dt.getDay() + 6) % 7; dt.setDate(dt.getDate() - day); dt.setHours(0, 0, 0, 0); return dt; }
 function topSetOf(sets) { return sets.reduce((a, r) => (+r.weight > +a.weight ? r : a), sets[0]); }
 function dfmt(t) { return new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+function toDateInputValue(t) {
+  const d = new Date(t);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function dateInputToISO(val, fallback) {
+  // val is 'YYYY-MM-DD' from a date input; preserve the time-of-day from fallback (or use now) so ordering among same-day sessions is stable.
+  if (!val) return fallback || new Date().toISOString();
+  const [y, m, d] = val.split('-').map(Number);
+  const base = fallback ? new Date(fallback) : new Date();
+  const dt = new Date(y, m - 1, d, base.getHours(), base.getMinutes(), base.getSeconds());
+  return dt.toISOString();
+}
 function greeting() { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; }
 function initials() {
   if (S.fullName) { const parts = S.fullName.trim().split(/\s+/); return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || parts[0].slice(0, 2).toUpperCase(); }
@@ -141,6 +154,8 @@ function render() {
     ${S.active ? sessionOverlay() : ''}
     ${S.detailExerciseId ? detailOverlay() : ''}
     ${S.exerciseForm ? exerciseFormSheet() : ''}
+    ${S.pickDay ? pickDayOverlay() : ''}
+    ${S.editor ? editorOverlay() : ''}
     ${S.showDone ? doneSheet() : ''}
   `;
   const clockEl = document.getElementById('sessionClock');
@@ -515,15 +530,184 @@ function viewHistory() {
           </div>
           <div class="hist-chev">${open ? '▲' : '▼'}</div>
         </div>
-        ${open ? `<div class="hist-lines">${lines}</div><button class="hist-del" onclick="App.deleteSession('${s.id}')">Delete this session</button>` : ''}
+        ${open ? `<div class="hist-lines">${lines}</div><div class="hist-actions"><button class="hist-edit" onclick="App.startEditorEdit('${s.id}')">Edit session</button><button class="hist-del" onclick="App.deleteSession('${s.id}')">Delete this session</button></div>` : ''}
       </div>`;
   }).join('');
 
   return `
     <div class="label-sm">Every session</div>
     <div class="next-name title-serif" style="font-size:40px;margin:4px 0 20px">History</div>
+    <button class="log-past-btn" onclick="App.openLogPast()">+ Log a past session</button>
     ${rows || `<div class="empty"><p>Nothing logged yet.</p></div>`}
   `;
+}
+
+// ---- log-past / edit-session flow ----
+function openLogPast() {
+  if (!S.days.length) { alert('Add a day to your program in Settings first.'); return; }
+  S.pickDay = true; render();
+}
+function closePickDay() { S.pickDay = false; render(); }
+
+function pickDayOverlay() {
+  const rows = S.days.map(d => `
+    <button class="day-pick-btn" onclick="App.startEditorNew('${d.id}')">
+      <div class="day-body">
+        <div class="day-name">${esc(d.name)}</div>
+        <div class="day-sub">${d.exercises.map(e => e.name).join(' · ')}</div>
+      </div>
+    </button>`).join('');
+  return `
+  <div class="sheet-backdrop">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="auth-title" style="font-size:26px">Which day did you train?</div>
+      <div style="font-size:13.5px;color:var(--muted);margin-top:4px">You'll pick the date next.</div>
+      ${rows}
+      <button class="btn-secondary" style="width:100%;margin-top:14px" onclick="App.closePickDay()">Cancel</button>
+    </div>
+  </div>`;
+}
+
+function startEditorNew(dayId) {
+  const day = S.days.find(d => d.id === dayId);
+  if (!day) return;
+  S.pickDay = false;
+  S.editor = {
+    id: null, dayId: day.id, dayName: day.name, date: toDateInputValue(new Date()),
+    exercises: day.exercises.map(ex => ({
+      exercise_id: ex.id, name: ex.name, per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight,
+      sets: Array.from({ length: ex.sets }, () => ({ w: '', r: '' })),
+      rpe: null, note: '',
+    })),
+  };
+  render();
+}
+function startEditorEdit(sessionId) {
+  const s = S.sessions.find(x => x.id === sessionId);
+  if (!s) return;
+  S.editor = {
+    id: s.id, dayId: s.day_id, dayName: s.day_name, date: toDateInputValue(s.performed_at), performedAt: s.performed_at,
+    exercises: s.entries.map(e => ({
+      exercise_id: e.exercise_id, name: e.exercise_name, per_leg: !!e.per_leg, bodyweight: !!e.bodyweight,
+      sets: e.sets.length ? e.sets.map(x => ({ w: String(x.weight), r: String(x.reps) })) : [{ w: '', r: '' }],
+      rpe: e.rpe || null, note: e.note || '',
+    })),
+  };
+  render();
+}
+function closeEditor() { S.editor = null; render(); }
+function setEditorDate(val) { S.editor.date = val; }
+function setEditorSetField(exIdx, setIdx, key, val) { S.editor.exercises[exIdx].sets[setIdx][key] = val; }
+function addEditorSet(exIdx) { S.editor.exercises[exIdx].sets.push({ w: '', r: '' }); render(); }
+function removeEditorSet(exIdx, setIdx) {
+  const ex = S.editor.exercises[exIdx];
+  if (ex.sets.length <= 1) { ex.sets[0] = { w: '', r: '' }; } else { ex.sets.splice(setIdx, 1); }
+  render();
+}
+function pickEditorRpe(exIdx, n) { S.editor.exercises[exIdx].rpe = S.editor.exercises[exIdx].rpe === n ? null : n; render(); }
+function setEditorNote(exIdx, val) { S.editor.exercises[exIdx].note = val; }
+
+async function saveEditor() {
+  const e = S.editor;
+  if (!e.date) { alert('Pick a date.'); return; }
+  const filledExercises = e.exercises
+    .map(ex => ({ ...ex, sets: ex.sets.filter(s => s.w !== '' && s.r !== '').map(s => ({ weight: Math.max(0, +s.w || 0), reps: Math.max(0, +s.r || 0) })) }))
+    .filter(ex => ex.sets.length);
+  if (!filledExercises.length) { alert('Fill in at least one set (weight and reps) before saving.'); return; }
+
+  const performedAt = dateInputToISO(e.date, e.performedAt);
+
+  if (e.id) {
+    // edit mode: replace all entries/sets for this session
+    await sb.from('sessions').update({ day_id: e.dayId, day_name: e.dayName, performed_at: performedAt }).eq('id', e.id);
+    await sb.from('session_entries').delete().eq('session_id', e.id);
+    for (let i = 0; i < filledExercises.length; i++) {
+      const ex = filledExercises[i];
+      const { data: entryRow, error } = await sb.from('session_entries')
+        .insert({ user_id: S.user.id, session_id: e.id, exercise_id: ex.exercise_id, exercise_name: ex.name, per_leg: ex.per_leg, bodyweight: ex.bodyweight, rpe: ex.rpe, note: ex.note || null, sort_order: i })
+        .select().single();
+      if (error) { console.error(error); continue; }
+      const setPayload = ex.sets.map((s, j) => ({ user_id: S.user.id, entry_id: entryRow.id, set_num: j + 1, weight: s.weight, reps: s.reps }));
+      await sb.from('session_sets').insert(setPayload);
+    }
+  } else {
+    const { data: sessionRow, error: sErr } = await sb.from('sessions')
+      .insert({ user_id: S.user.id, day_id: e.dayId, day_name: e.dayName, performed_at: performedAt })
+      .select().single();
+    if (sErr) { alert('Could not save session: ' + sErr.message); return; }
+    for (let i = 0; i < filledExercises.length; i++) {
+      const ex = filledExercises[i];
+      const { data: entryRow, error } = await sb.from('session_entries')
+        .insert({ user_id: S.user.id, session_id: sessionRow.id, exercise_id: ex.exercise_id, exercise_name: ex.name, per_leg: ex.per_leg, bodyweight: ex.bodyweight, rpe: ex.rpe, note: ex.note || null, sort_order: i })
+        .select().single();
+      if (error) { console.error(error); continue; }
+      const setPayload = ex.sets.map((s, j) => ({ user_id: S.user.id, entry_id: entryRow.id, set_num: j + 1, weight: s.weight, reps: s.reps }));
+      await sb.from('session_sets').insert(setPayload);
+    }
+  }
+
+  S.editor = null;
+  await reloadSessions();
+  render();
+}
+async function deleteEditorSession() {
+  if (!S.editor.id) { S.editor = null; render(); return; }
+  if (!confirm('Delete this session? This cannot be undone.')) return;
+  await sb.from('sessions').delete().eq('id', S.editor.id);
+  S.editor = null;
+  await reloadSessions();
+  render();
+}
+
+function editorOverlay() {
+  const e = S.editor;
+  const blocks = e.exercises.map((ex, exIdx) => {
+    const rows = ex.sets.map((s, j) => `
+      <div class="editor-set-row">
+        <div class="set-num">${j + 1}</div>
+        <div class="set-input-wrap">
+          <input class="set-input" type="text" inputmode="decimal" value="${esc(s.w)}" oninput="App.setEditorSetField(${exIdx},${j},'w',this.value)" placeholder="0">
+          <div class="unit-suffix">kg</div>
+        </div>
+        <div style="flex:1">
+          <input class="set-input" type="text" inputmode="numeric" value="${esc(s.r)}" oninput="App.setEditorSetField(${exIdx},${j},'r',this.value)" placeholder="0">
+        </div>
+        <button class="set-remove-btn" onclick="App.removeEditorSet(${exIdx},${j})">✕</button>
+      </div>`).join('');
+    const rpes = [6, 7, 8, 9, 10].map(n => `<button class="rpe-pill ${ex.rpe === n ? 'on' : ''}" onclick="App.pickEditorRpe(${exIdx},${n})">${n}</button>`).join('');
+    return `
+      <div class="editor-ex-block">
+        <div class="ex-name">${esc(ex.name)}</div>
+        <div class="set-headers" style="margin-top:10px"><div style="width:26px">Set</div><div style="flex:1">Weight</div><div style="flex:1">Reps</div><div style="width:34px"></div></div>
+        ${rows}
+        <button class="add-set-link" onclick="App.addEditorSet(${exIdx})">+ Add set</button>
+        <div class="rpe-row"><div class="rpe-label">RPE</div><div class="rpe-pills">${rpes}</div></div>
+        <input class="note-input" type="text" value="${esc(ex.note)}" oninput="App.setEditorNote(${exIdx},this.value)" placeholder="Add a note…">
+      </div>`;
+  }).join('');
+
+  return `
+  <div class="overlay entering"><div class="overlay-inner">
+    <div class="ov-head">
+      <div class="ov-head-row">
+        <button class="back-btn" onclick="App.closeEditor()">←</button>
+        <div style="flex:1">
+          <div style="font-size:16.5px;font-weight:600;line-height:1.2">${e.id ? 'Edit session' : 'Log a past session'} · ${esc(e.dayName)}</div>
+          <div style="font-size:12.5px;color:var(--muted);margin-top:2px">Leave a set's weight or reps blank to leave it out.</div>
+        </div>
+      </div>
+    </div>
+    <div class="ov-scroll" style="padding-bottom:110px">
+      <label class="field-label">Date</label>
+      <input class="date-field" type="date" value="${e.date}" max="${toDateInputValue(new Date())}" onchange="App.setEditorDate(this.value)">
+      ${blocks}
+    </div>
+    <div class="sess-foot">
+      ${e.id ? `<button class="hist-del" style="margin-bottom:10px" onclick="App.deleteEditorSession()">Delete this session</button>` : ''}
+      <button class="finish-btn" style="background:${ACC}" onclick="App.saveEditor()">Save session</button>
+    </div>
+  </div></div>`;
 }
 
 function toggleHistory(id) { S.openHistoryId = S.openHistoryId === id ? null : id; render(); }
@@ -997,6 +1181,9 @@ window.App = {
   setView, startSession, exitSession, toggleExpand, setField, setNote, toggleSetDone, pickRpe, finishSession,
   openDetail, closeDetail, pickDetailIdx, toggleDetailRange,
   toggleHistory, deleteSession,
+  openLogPast, closePickDay, startEditorNew, startEditorEdit, closeEditor,
+  setEditorDate, setEditorSetField, addEditorSet, removeEditorSet, pickEditorRpe, setEditorNote,
+  saveEditor, deleteEditorSession,
   closeDone, signOut,
   addDay, renameDay, deleteDay, moveDay, saveBodyweight,
   openExerciseForm, closeExerciseForm, setExField, toggleExField, saveExerciseForm, deleteExerciseForm,
