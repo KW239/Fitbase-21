@@ -285,6 +285,10 @@ button{font-family:inherit}
 const SUPABASE_URL = 'https://tcuashoeqsoizzqrazgk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjdWFzaG9lcXNvaXp6cXJhemdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzMzUwMDksImV4cCI6MjEwMTkxMTAwOX0.Ye7PlCr4fO_wRCFm7A6AD9KGFPbrc7SL-I5E1vVh3uM';
 </script>
-<script src="app.js"></script>
+<script>
+// Cache-bust app.js on every load so future updates show up immediately —
+// no more clearing Safari site data after a deploy.
+document.write('<script src="app.js?v=' + Date.now() + '"><' + '/script>');
+</script>
 </body>
 </html>
