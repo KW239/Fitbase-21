@@ -274,8 +274,18 @@ button{font-family:inherit}
 .form-actions{display:flex;gap:10px;margin-top:18px}
 .btn-secondary{flex:1;height:48px;border-radius:14px;border:1.5px solid var(--border);background:none;color:var(--muted);font-size:14.5px;font-weight:600;cursor:pointer}
 .btn-danger{background:none;border:none;color:#B85C3C;font-size:13px;font-weight:600;cursor:pointer;padding:6px 0}
-.profile-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-radius:16px;padding:14px 16px;margin-top:10px}
-.profile-row input{width:80px;height:38px;border-radius:10px;border:1.5px solid var(--border);background:#FBF7EF;padding:0 10px;font-size:15px;text-align:right}
+.profile-field-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--border)}
+.profile-field-row:first-of-type{border-top:none}
+.profile-field-row label{font-size:14.5px;font-weight:600}
+.profile-field-input{display:flex;align-items:center;gap:6px}
+.profile-field-input input{width:80px;height:38px;border-radius:10px;border:1.5px solid var(--border);background:#FBF7EF;padding:0 10px;font-size:15px;text-align:right;color:var(--ink)}
+.profile-field-input span{font-size:13px;color:var(--muted);width:24px}
+.scheme-card{background:var(--card);border-radius:20px;padding:16px 18px;margin-top:10px}
+.scheme-name{font-size:15.5px;font-weight:600}
+.scheme-blurb{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.4}
+.scheme-days{font-size:11.5px;color:var(--faint);margin-top:8px}
+.scheme-btn{width:100%;height:42px;border-radius:13px;border:1.5px solid var(--border);background:none;color:var(--accent);font-size:13.5px;font-weight:600;cursor:pointer;margin-top:12px}
+.scheme-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
 .signout-btn{width:100%;margin-top:24px;height:48px;border-radius:14px;background:none;border:1.5px solid var(--border);color:var(--accent);font-weight:600;font-size:14.5px;cursor:pointer}
 
 *::-webkit-scrollbar{display:none}

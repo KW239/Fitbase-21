@@ -8,6 +8,8 @@ create table if not exists public.profiles (
   id             uuid primary key references auth.users(id) on delete cascade,
   full_name      text,
   bodyweight_kg  numeric(6,2) not null default 80,
+  height_cm      numeric(5,1),
+  age            int,
   updated_at     timestamptz default now()
 );
 

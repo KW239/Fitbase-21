@@ -32,11 +32,84 @@ const DEFAULT_PROGRAM = [
   ]},
 ];
 
+// Pre-built program templates offered from the Profile tab. Picking one
+// replaces the user's current program_days/program_exercises with the
+// template's — logged history is untouched (session_entries keep a name
+// snapshot and only lose the FK link to the old exercise row).
+const PROGRAM_TEMPLATES = [
+  {
+    key: 'capacity', name: 'Full Body · Capacity',
+    blurb: '3 days · the original balanced full-body split this app shipped with.',
+    days: DEFAULT_PROGRAM,
+  },
+  {
+    key: 'ppl', name: 'Push / Pull / Legs',
+    blurb: '3 days · classic push/pull/legs split, one muscle focus per day.',
+    days: [
+      { name: 'Push', exercises: [
+        { name: 'Barbell bench press', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 60, increment: 2.5 },
+        { name: 'Overhead press', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 35, increment: 2.5 },
+        { name: 'Incline dumbbell press', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 20, increment: 2 },
+        { name: 'Lateral raises', sets: 3, rep_lo: 12, rep_hi: 15, base_weight: 7, increment: 1 },
+        { name: 'Triceps pushdown', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
+      ]},
+      { name: 'Pull', exercises: [
+        { name: 'Deadlift', sets: 3, rep_lo: 5, rep_hi: 6, base_weight: 90, increment: 5 },
+        { name: 'Pull-ups', sets: 4, rep_lo: 6, rep_hi: 10, base_weight: 0, increment: 2.5, bodyweight: true },
+        { name: 'Barbell row', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 50, increment: 2.5 },
+        { name: 'Face pulls', sets: 3, rep_lo: 12, rep_hi: 15, base_weight: 12, increment: 1 },
+        { name: 'Barbell curl', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
+      ]},
+      { name: 'Legs', exercises: [
+        { name: 'Barbell back squat', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 70, increment: 5 },
+        { name: 'Romanian deadlift', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 60, increment: 5 },
+        { name: 'Leg press', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 100, increment: 10 },
+        { name: 'Leg curl', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 25, increment: 2.5 },
+        { name: 'Standing calf raise', sets: 4, rep_lo: 12, rep_hi: 15, base_weight: 40, increment: 5 },
+      ]},
+    ],
+  },
+  {
+    key: 'upperlower', name: 'Upper / Lower',
+    blurb: '4 days · two upper-body days, two lower-body days per week.',
+    days: [
+      { name: 'Upper A', exercises: [
+        { name: 'Barbell bench press', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 60, increment: 2.5 },
+        { name: 'Barbell row', sets: 4, rep_lo: 8, rep_hi: 10, base_weight: 50, increment: 2.5 },
+        { name: 'Overhead press', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 32.5, increment: 2.5 },
+        { name: 'Lat pulldown', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 45, increment: 2.5 },
+        { name: 'Barbell curl', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
+      ]},
+      { name: 'Lower A', exercises: [
+        { name: 'Barbell back squat', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 70, increment: 5 },
+        { name: 'Romanian deadlift', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 60, increment: 5 },
+        { name: 'Leg press', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 100, increment: 10 },
+        { name: 'Leg curl', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 25, increment: 2.5 },
+        { name: 'Calf raise', sets: 4, rep_lo: 12, rep_hi: 15, base_weight: 40, increment: 5 },
+      ]},
+      { name: 'Upper B', exercises: [
+        { name: 'Incline dumbbell press', sets: 4, rep_lo: 8, rep_hi: 10, base_weight: 20, increment: 2 },
+        { name: 'Pull-ups', sets: 4, rep_lo: 6, rep_hi: 10, base_weight: 0, increment: 2.5, bodyweight: true },
+        { name: 'Dumbbell shoulder press', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 18, increment: 2 },
+        { name: 'Cable row', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 45, increment: 2.5 },
+        { name: 'Triceps pushdown', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
+      ]},
+      { name: 'Lower B', exercises: [
+        { name: 'Deadlift', sets: 3, rep_lo: 5, rep_hi: 6, base_weight: 90, increment: 5 },
+        { name: 'Front squat', sets: 3, rep_lo: 6, rep_hi: 8, base_weight: 45, increment: 2.5 },
+        { name: 'Walking lunges', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 16, increment: 2, per_leg: true },
+        { name: 'Leg extension', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 30, increment: 2.5 },
+        { name: 'Seated calf raise', sets: 4, rep_lo: 12, rep_hi: 15, base_weight: 25, increment: 2.5 },
+      ]},
+    ],
+  },
+];
+
 const ACC = '#B85C3C', INK = '#241F1A', MUT = '#8B8175', SAGE = '#6F7F5F', GOLD = '#E9A03F', FAINT = '#B0A597', BORDER = '#E6DBC8';
 
 // ---- global state ----
 const S = {
-  loading: true, user: null, fullName: '', bodyweight: 80,
+  loading: true, user: null, fullName: '', bodyweight: 80, height: null, age: null,
   authMode: 'signin', authBusy: false, authError: '', authOk: '',
   days: [], sessions: [],
   view: 'today',
@@ -202,6 +275,7 @@ function mainView() {
     case 'progress': return viewProgress();
     case 'records': return viewRecords();
     case 'history': return viewHistory();
+    case 'profile': return viewProfile();
     case 'settings': return viewSettings();
     default: return viewToday();
   }
@@ -227,7 +301,7 @@ function syncBanner() {
 
 function tabBar() {
   const tabs = [
-    ['today', 'Today'], ['progress', 'Progress'], ['records', 'Records'], ['history', 'History'], ['settings', 'Settings'],
+    ['today', 'Today'], ['progress', 'Progress'], ['records', 'Records'], ['history', 'History'], ['profile', 'Profile'], ['settings', 'Settings'],
   ];
   return tabs.map(([k, label]) => `
     <button class="tab-item ${S.view === k ? 'active' : ''}" onclick="App.setView('${k}')">
@@ -308,15 +382,17 @@ async function signOut() { await sb.auth.signOut(); }
 // off the last-known data instead of getting stuck.
 async function loadProfile() {
   try {
-    const { data, error } = await sb.from('profiles').select('full_name,bodyweight_kg').eq('id', S.user.id).maybeSingle();
+    const { data, error } = await sb.from('profiles').select('full_name,bodyweight_kg,height_cm,age').eq('id', S.user.id).maybeSingle();
     if (error) throw error;
     if (data) {
       S.fullName = data.full_name || ''; S.bodyweight = +data.bodyweight_kg || 80;
-      lsSet('profile', { fullName: S.fullName, bodyweight: S.bodyweight });
+      S.height = data.height_cm != null ? +data.height_cm : null;
+      S.age = data.age != null ? +data.age : null;
+      lsSet('profile', { fullName: S.fullName, bodyweight: S.bodyweight, height: S.height, age: S.age });
     }
   } catch (e) {
     const cached = lsGet('profile', null);
-    if (cached) { S.fullName = cached.fullName; S.bodyweight = cached.bodyweight; }
+    if (cached) { S.fullName = cached.fullName; S.bodyweight = cached.bodyweight; S.height = cached.height; S.age = cached.age; }
   }
 }
 async function loadProgram() {
@@ -1198,25 +1274,83 @@ function viewSettings() {
     </div>`).join('');
 
   return `
-    <div class="label-sm">Your setup</div>
+    <div class="label-sm">Your program</div>
     <div class="next-name title-serif" style="font-size:40px;margin:4px 0 20px">Settings</div>
 
     <div class="set-section">
-      <div class="label-sm" style="margin-bottom:8px">Bodyweight</div>
-      <div class="profile-row">
-        <div style="font-size:13.5px;color:var(--muted)">Used for bodyweight-based exercises</div>
-        <input type="text" inputmode="decimal" value="${trimNum(S.bodyweight)}" onchange="App.saveBodyweight(this.value)"> kg
-      </div>
-    </div>
-
-    <div class="set-section">
-      <div class="label-sm" style="margin-bottom:4px">Program</div>
       ${daysHtml}
       <button class="add-day-btn" onclick="App.addDay()">+ Add day</button>
     </div>
 
     <button class="signout-btn" onclick="App.signOut()">Sign out</button>
   `;
+}
+
+function viewProfile() {
+  const detailsCard = `
+    <div class="card">
+      <div class="card-row"><div class="label-sm" style="margin-bottom:0">Personal details</div></div>
+      <div class="profile-field-row">
+        <label>Weight</label>
+        <div class="profile-field-input"><input type="text" inputmode="decimal" value="${trimNum(S.bodyweight)}" onchange="App.saveBodyweight(this.value)"><span>kg</span></div>
+      </div>
+      <div class="profile-field-row">
+        <label>Height</label>
+        <div class="profile-field-input"><input type="text" inputmode="decimal" value="${S.height != null ? trimNum(S.height) : ''}" placeholder="—" onchange="App.saveHeight(this.value)"><span>cm</span></div>
+      </div>
+      <div class="profile-field-row">
+        <label>Age</label>
+        <div class="profile-field-input"><input type="text" inputmode="numeric" value="${S.age != null ? S.age : ''}" placeholder="—" onchange="App.saveAge(this.value)"><span>yrs</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--faint);margin-top:10px">Weight is used for bodyweight-based exercises (like pull-ups). Height and age are just kept on your profile for now.</div>
+    </div>`;
+
+  const schemeCards = PROGRAM_TEMPLATES.map(t => `
+    <div class="scheme-card">
+      <div class="scheme-name">${esc(t.name)}</div>
+      <div class="scheme-blurb">${esc(t.blurb)}</div>
+      <div class="scheme-days">${t.days.map(d => esc(d.name)).join(' · ')}</div>
+      <button class="scheme-btn" onclick="App.applyTemplate('${t.key}')">Use this program</button>
+    </div>`).join('');
+
+  return `
+    <div class="label-sm">You</div>
+    <div class="next-name title-serif" style="font-size:40px;margin:4px 0 20px">Profile</div>
+
+    ${detailsCard}
+
+    <div class="section-head" style="margin-top:26px">
+      <div class="label-sm">Training scheme</div>
+    </div>
+    <div style="font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.4">Switching replaces your current program's days and exercises. Your logged history stays intact, but progress suggestions for a lift start fresh if it's swapped for a differently-tracked exercise.</div>
+    <div>${schemeCards}</div>
+  `;
+}
+
+async function applyTemplate(key) {
+  const tpl = PROGRAM_TEMPLATES.find(t => t.key === key);
+  if (!tpl) return;
+  if (!navigator.onLine) { alert("You're offline — switching programs needs a connection. Try again once you're back online."); return; }
+  if (!confirm(`Switch to "${tpl.name}"? This replaces your current program's days and exercises. Your logged history is kept.`)) return;
+  // Cascading delete removes program_exercises too; session_entries keep a
+  // name snapshot and just lose the FK link (on delete set null) — history
+  // itself is untouched.
+  for (const day of S.days) {
+    await sb.from('program_days').delete().eq('id', day.id);
+  }
+  for (let i = 0; i < tpl.days.length; i++) {
+    const day = tpl.days[i];
+    const { data: dayRow, error } = await sb.from('program_days').insert({ user_id: S.user.id, name: day.name, sort_order: i }).select().single();
+    if (error) { console.error(error); continue; }
+    const rows = day.exercises.map((ex, j) => ({
+      user_id: S.user.id, day_id: dayRow.id, name: ex.name, sets: ex.sets, rep_lo: ex.rep_lo, rep_hi: ex.rep_hi,
+      base_weight: ex.base_weight, increment: ex.increment, per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight, sort_order: j,
+    }));
+    await sb.from('program_exercises').insert(rows);
+  }
+  await loadProgram();
+  S.view = 'today';
+  render();
 }
 
 async function addDay() {
@@ -1250,7 +1384,22 @@ async function moveDay(id, dir) {
 async function saveBodyweight(val) {
   const n = Math.max(1, +val || 80);
   S.bodyweight = n;
+  lsSet('profile', { fullName: S.fullName, bodyweight: S.bodyweight, height: S.height, age: S.age });
   await sb.from('profiles').update({ bodyweight_kg: n }).eq('id', S.user.id);
+}
+async function saveHeight(val) {
+  const n = val === '' ? null : Math.max(1, +val || 0);
+  S.height = n;
+  lsSet('profile', { fullName: S.fullName, bodyweight: S.bodyweight, height: S.height, age: S.age });
+  const { error } = await sb.from('profiles').update({ height_cm: n }).eq('id', S.user.id);
+  if (error) alert("Couldn't save height — run migrations/002_add_height_age.sql in your Supabase SQL Editor if you haven't yet, then try again.");
+}
+async function saveAge(val) {
+  const n = val === '' ? null : Math.max(1, Math.round(+val || 0));
+  S.age = n;
+  lsSet('profile', { fullName: S.fullName, bodyweight: S.bodyweight, height: S.height, age: S.age });
+  const { error } = await sb.from('profiles').update({ age: n }).eq('id', S.user.id);
+  if (error) alert("Couldn't save age — run migrations/002_add_height_age.sql in your Supabase SQL Editor if you haven't yet, then try again.");
 }
 
 function openExerciseForm(dayId, exId) {
@@ -1332,7 +1481,7 @@ window.App = {
   setEditorDate, setEditorSetField, addEditorSet, removeEditorSet, pickEditorRpe, setEditorNote,
   saveEditor, deleteEditorSession,
   closeDone, signOut, syncPendingQueue,
-  addDay, renameDay, deleteDay, moveDay, saveBodyweight,
+  addDay, renameDay, deleteDay, moveDay, saveBodyweight, saveHeight, saveAge, applyTemplate,
   openExerciseForm, closeExerciseForm, setExField, toggleExField, saveExerciseForm, deleteExerciseForm,
 };
 

@@ -39,7 +39,10 @@ your account is the only one that will ever exist.
 
 - `index.html` — markup, styles, Supabase config
 - `app.js` — all app logic (auth, data loading, rendering, session flow)
-- `setup.sql` — Supabase schema + RLS policies
+- `setup.sql` — Supabase schema + RLS policies (fresh installs)
+- `migrations/` — one-off schema changes for an already-running install; run
+  each file once in the Supabase SQL Editor, in order, if it doesn't already
+  match `setup.sql`
 
 ## Notes
 
@@ -55,6 +58,13 @@ your account is the only one that will ever exist.
   past session** to backfill an old workout (pick the day and date, fill in
   sets), or open any existing session and tap **Edit session** to add/remove
   sets, change weights/reps/RPE, fix the date, or add a note after the fact.
+- **Profile tab** — weight, height, and age, plus a picker for a few
+  pre-built program templates (Full Body, Push/Pull/Legs, Upper/Lower).
+  Switching templates replaces your current program's days and exercises;
+  logged history is kept (it's snapshotted per session), but progress
+  suggestions for a lift start fresh if it isn't in the new template under
+  the same tracked exercise. Needs a connection to switch (it's a
+  structural change, not something that can be queued offline).
 - **Works with no signal.** The app caches your program and history on the
   device after each successful load, so opening it offline still works off
   the last-known data. Anything you log while offline (or if a save fails
