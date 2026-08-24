@@ -44,6 +44,7 @@ create table if not exists public.program_exercises (
   user_id      uuid not null references auth.users(id) on delete cascade,
   day_id       uuid not null references public.program_days(id) on delete cascade,
   name         text not null,
+  description  text,
   sets         int not null default 3,
   rep_lo       int not null default 8,
   rep_hi       int not null default 10,

@@ -10,25 +10,25 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const DEFAULT_PROGRAM = [
   { name: 'Day 1', exercises: [
-    { name: 'Close grip bench press', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 55, increment: 2.5 },
-    { name: 'Dumbbell flye', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 12, increment: 2 },
-    { name: 'Heel elevated squat', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 65, increment: 5 },
-    { name: 'Split squat', sets: 2, rep_lo: 5, rep_hi: 7, base_weight: 20, increment: 2.5, per_leg: true },
-    { name: 'Good morning', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 40, increment: 2.5 },
+    { name: 'Close grip bench press', description: 'Hands shoulder-width, elbows tucked, drive through the triceps.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 55, increment: 2.5 },
+    { name: 'Dumbbell flye', description: 'Slight elbow bend, wide arc, squeeze the chest at the top.', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 12, increment: 2 },
+    { name: 'Heel elevated squat', description: 'Heels raised, sit deep, knees track over the toes.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 65, increment: 5 },
+    { name: 'Split squat', description: 'Drop straight down, front knee stable, drive back up.', sets: 2, rep_lo: 5, rep_hi: 7, base_weight: 20, increment: 2.5, per_leg: true },
+    { name: 'Good morning', description: 'Hinge at the hips, soft knees, chest stays proud.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 40, increment: 2.5 },
   ]},
   { name: 'Day 2', exercises: [
-    { name: 'Dumbbell bench press', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 22, increment: 2 },
-    { name: 'Dumbbell lateral raises', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 8, increment: 1 },
-    { name: 'Deficit deadlift', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 80, increment: 5 },
-    { name: 'Bulgarian split squat', sets: 2, rep_lo: 5, rep_hi: 7, base_weight: 16, increment: 2, per_leg: true },
-    { name: 'Pull-ups', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 0, increment: 2.5, bodyweight: true },
+    { name: 'Dumbbell bench press', description: 'Press up and slightly in, control the descent.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 22, increment: 2 },
+    { name: 'Dumbbell lateral raises', description: 'Slight elbow bend, raise to shoulder height, no swinging.', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 8, increment: 1 },
+    { name: 'Deficit deadlift', description: 'Stand on a small platform, brace hard, pull the floor apart.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 80, increment: 5 },
+    { name: 'Bulgarian split squat', description: 'Rear foot on a bench, drop straight down, front knee stable.', sets: 2, rep_lo: 5, rep_hi: 7, base_weight: 16, increment: 2, per_leg: true },
+    { name: 'Pull-ups', description: 'Full hang to chin over the bar, control the way down.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 0, increment: 2.5, bodyweight: true },
   ]},
   { name: 'Day 3', exercises: [
-    { name: 'Strict press', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 37.5, increment: 2.5 },
-    { name: 'Skull crushers', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 25, increment: 2.5 },
-    { name: 'Barbell back squat', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 85, increment: 5 },
-    { name: 'Reverse barbell lunges', sets: 2, rep_lo: 5, rep_hi: 7, base_weight: 30, increment: 2.5, per_leg: true },
-    { name: 'Barbell strict row', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 55, increment: 2.5 },
+    { name: 'Strict press', description: 'No leg drive, brace the core, press straight overhead.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 37.5, increment: 2.5 },
+    { name: 'Skull crushers', description: 'Elbows fixed, lower the bar to your forehead, extend fully.', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 25, increment: 2.5 },
+    { name: 'Barbell back squat', description: 'Bar on traps, brace, sit the hips back and down.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 85, increment: 5 },
+    { name: 'Reverse barbell lunges', description: 'Step back, drop the knee toward the floor, drive through the heel.', sets: 2, rep_lo: 5, rep_hi: 7, base_weight: 30, increment: 2.5, per_leg: true },
+    { name: 'Barbell strict row', description: 'Hinge forward, pull the bar to your belly, squeeze the shoulder blades.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 55, increment: 2.5 },
   ]},
 ];
 
@@ -47,25 +47,25 @@ const PROGRAM_TEMPLATES = [
     blurb: '3 days · classic push/pull/legs split, one muscle focus per day.',
     days: [
       { name: 'Push', exercises: [
-        { name: 'Barbell bench press', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 60, increment: 2.5 },
-        { name: 'Overhead press', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 35, increment: 2.5 },
-        { name: 'Incline dumbbell press', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 20, increment: 2 },
-        { name: 'Lateral raises', sets: 3, rep_lo: 12, rep_hi: 15, base_weight: 7, increment: 1 },
-        { name: 'Triceps pushdown', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
+        { name: 'Barbell bench press', description: 'Retract the shoulder blades, bar to chest, drive up explosively.', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 60, increment: 2.5 },
+        { name: 'Overhead press', description: 'Brace the core, press the bar straight up past your face.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 35, increment: 2.5 },
+        { name: 'Incline dumbbell press', description: 'Bench at 30-45°, press up and slightly together.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 20, increment: 2 },
+        { name: 'Lateral raises', description: 'Slight elbow bend, raise to shoulder height, controlled tempo.', sets: 3, rep_lo: 12, rep_hi: 15, base_weight: 7, increment: 1 },
+        { name: 'Triceps pushdown', description: 'Elbows pinned to your sides, extend fully, squeeze at the bottom.', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
       ]},
       { name: 'Pull', exercises: [
-        { name: 'Deadlift', sets: 3, rep_lo: 5, rep_hi: 6, base_weight: 90, increment: 5 },
-        { name: 'Pull-ups', sets: 4, rep_lo: 6, rep_hi: 10, base_weight: 0, increment: 2.5, bodyweight: true },
-        { name: 'Barbell row', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 50, increment: 2.5 },
-        { name: 'Face pulls', sets: 3, rep_lo: 12, rep_hi: 15, base_weight: 12, increment: 1 },
-        { name: 'Barbell curl', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
+        { name: 'Deadlift', description: 'Hips back, flat back, drive the floor away through your heels.', sets: 3, rep_lo: 5, rep_hi: 6, base_weight: 90, increment: 5 },
+        { name: 'Pull-ups', description: 'Full hang to chin over the bar, control the way down.', sets: 4, rep_lo: 6, rep_hi: 10, base_weight: 0, increment: 2.5, bodyweight: true },
+        { name: 'Barbell row', description: 'Hinge forward, pull the bar to your lower ribs, squeeze back.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 50, increment: 2.5 },
+        { name: 'Face pulls', description: 'Pull the rope to your face, elbows high, squeeze rear delts.', sets: 3, rep_lo: 12, rep_hi: 15, base_weight: 12, increment: 1 },
+        { name: 'Barbell curl', description: 'Elbows pinned, curl up, no swinging or leaning back.', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
       ]},
       { name: 'Legs', exercises: [
-        { name: 'Barbell back squat', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 70, increment: 5 },
-        { name: 'Romanian deadlift', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 60, increment: 5 },
-        { name: 'Leg press', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 100, increment: 10 },
-        { name: 'Leg curl', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 25, increment: 2.5 },
-        { name: 'Standing calf raise', sets: 4, rep_lo: 12, rep_hi: 15, base_weight: 40, increment: 5 },
+        { name: 'Barbell back squat', description: 'Bar on traps, brace, sit the hips back and down.', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 70, increment: 5 },
+        { name: 'Romanian deadlift', description: 'Soft knees, hinge the hips back, feel the hamstring stretch.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 60, increment: 5 },
+        { name: 'Leg press', description: 'Feet shoulder-width, lower until knees near 90°, drive through heels.', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 100, increment: 10 },
+        { name: 'Leg curl', description: 'Squeeze the hamstrings, curl heels to glutes, control the release.', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 25, increment: 2.5 },
+        { name: 'Standing calf raise', description: 'Full stretch at the bottom, rise high onto your toes, pause.', sets: 4, rep_lo: 12, rep_hi: 15, base_weight: 40, increment: 5 },
       ]},
     ],
   },
@@ -74,38 +74,52 @@ const PROGRAM_TEMPLATES = [
     blurb: '4 days · two upper-body days, two lower-body days per week.',
     days: [
       { name: 'Upper A', exercises: [
-        { name: 'Barbell bench press', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 60, increment: 2.5 },
-        { name: 'Barbell row', sets: 4, rep_lo: 8, rep_hi: 10, base_weight: 50, increment: 2.5 },
-        { name: 'Overhead press', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 32.5, increment: 2.5 },
-        { name: 'Lat pulldown', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 45, increment: 2.5 },
-        { name: 'Barbell curl', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
+        { name: 'Barbell bench press', description: 'Retract the shoulder blades, bar to chest, drive up explosively.', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 60, increment: 2.5 },
+        { name: 'Barbell row', description: 'Hinge forward, pull the bar to your lower ribs, squeeze back.', sets: 4, rep_lo: 8, rep_hi: 10, base_weight: 50, increment: 2.5 },
+        { name: 'Overhead press', description: 'Brace the core, press the bar straight up past your face.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 32.5, increment: 2.5 },
+        { name: 'Lat pulldown', description: 'Pull the bar to your upper chest, elbows down and back.', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 45, increment: 2.5 },
+        { name: 'Barbell curl', description: 'Elbows pinned, curl up, no swinging or leaning back.', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
       ]},
       { name: 'Lower A', exercises: [
-        { name: 'Barbell back squat', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 70, increment: 5 },
-        { name: 'Romanian deadlift', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 60, increment: 5 },
-        { name: 'Leg press', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 100, increment: 10 },
-        { name: 'Leg curl', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 25, increment: 2.5 },
-        { name: 'Calf raise', sets: 4, rep_lo: 12, rep_hi: 15, base_weight: 40, increment: 5 },
+        { name: 'Barbell back squat', description: 'Bar on traps, brace, sit the hips back and down.', sets: 4, rep_lo: 6, rep_hi: 8, base_weight: 70, increment: 5 },
+        { name: 'Romanian deadlift', description: 'Soft knees, hinge the hips back, feel the hamstring stretch.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 60, increment: 5 },
+        { name: 'Leg press', description: 'Feet shoulder-width, lower until knees near 90°, drive through heels.', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 100, increment: 10 },
+        { name: 'Leg curl', description: 'Squeeze the hamstrings, curl heels to glutes, control the release.', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 25, increment: 2.5 },
+        { name: 'Calf raise', description: 'Rise onto your toes, pause at the top, lower with control.', sets: 4, rep_lo: 12, rep_hi: 15, base_weight: 40, increment: 5 },
       ]},
       { name: 'Upper B', exercises: [
-        { name: 'Incline dumbbell press', sets: 4, rep_lo: 8, rep_hi: 10, base_weight: 20, increment: 2 },
-        { name: 'Pull-ups', sets: 4, rep_lo: 6, rep_hi: 10, base_weight: 0, increment: 2.5, bodyweight: true },
-        { name: 'Dumbbell shoulder press', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 18, increment: 2 },
-        { name: 'Cable row', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 45, increment: 2.5 },
-        { name: 'Triceps pushdown', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
+        { name: 'Incline dumbbell press', description: 'Bench at 30-45°, press up and slightly together.', sets: 4, rep_lo: 8, rep_hi: 10, base_weight: 20, increment: 2 },
+        { name: 'Pull-ups', description: 'Full hang to chin over the bar, control the way down.', sets: 4, rep_lo: 6, rep_hi: 10, base_weight: 0, increment: 2.5, bodyweight: true },
+        { name: 'Dumbbell shoulder press', description: 'Press the dumbbells overhead, avoid over-arching your back.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 18, increment: 2 },
+        { name: 'Cable row', description: 'Sit tall, pull the handle to your torso, squeeze shoulder blades.', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 45, increment: 2.5 },
+        { name: 'Triceps pushdown', description: 'Elbows pinned to your sides, extend fully, squeeze at the bottom.', sets: 2, rep_lo: 10, rep_hi: 12, base_weight: 20, increment: 2.5 },
       ]},
       { name: 'Lower B', exercises: [
-        { name: 'Deadlift', sets: 3, rep_lo: 5, rep_hi: 6, base_weight: 90, increment: 5 },
-        { name: 'Front squat', sets: 3, rep_lo: 6, rep_hi: 8, base_weight: 45, increment: 2.5 },
-        { name: 'Walking lunges', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 16, increment: 2, per_leg: true },
-        { name: 'Leg extension', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 30, increment: 2.5 },
-        { name: 'Seated calf raise', sets: 4, rep_lo: 12, rep_hi: 15, base_weight: 25, increment: 2.5 },
+        { name: 'Deadlift', description: 'Hips back, flat back, drive the floor away through your heels.', sets: 3, rep_lo: 5, rep_hi: 6, base_weight: 90, increment: 5 },
+        { name: 'Front squat', description: 'Elbows high, bar on front delts, sit down and stand up.', sets: 3, rep_lo: 6, rep_hi: 8, base_weight: 45, increment: 2.5 },
+        { name: 'Walking lunges', description: 'Step forward, drop the back knee down, push through the front heel.', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 16, increment: 2, per_leg: true },
+        { name: 'Leg extension', description: 'Extend the knees fully, squeeze the quads, lower with control.', sets: 3, rep_lo: 10, rep_hi: 12, base_weight: 30, increment: 2.5 },
+        { name: 'Seated calf raise', description: 'Knees bent, rise onto your toes, full stretch each rep.', sets: 4, rep_lo: 12, rep_hi: 15, base_weight: 25, increment: 2.5 },
       ]},
     ],
   },
 ];
 
-const ACC = '#B85C3C', INK = '#241F1A', MUT = '#8B8175', SAGE = '#6F7F5F', GOLD = '#E9A03F', FAINT = '#B0A597', BORDER = '#E6DBC8';
+const ACC = '#B85C3C', INK = '#241F1A', MUT = '#8B8175', SAGE = '#6F7F5F', GOLD = '#E9A03F', FAINT = '#B0A597', BORDER = '#E6DBC8', DARKRED = '#7A2E22';
+
+// How each set felt, replacing a numeric 6-10 RPE scale with four plain
+// levels. Stored as 1-4 in the same `rpe` int column. A legacy or
+// out-of-range value just falls back to showing the raw number (see
+// rpeLevel()) rather than breaking.
+const RPE_LEVELS = [
+  { v: 1, label: 'Easy', color: SAGE },
+  { v: 2, label: 'Moderate', color: GOLD },
+  { v: 3, label: 'Hard', color: ACC },
+  { v: 4, label: 'Impossible', color: DARKRED },
+];
+function rpeLevel(n) {
+  return RPE_LEVELS.find(l => l.v === n) || (n ? { v: n, label: String(n), color: FAINT } : null);
+}
 
 // ---- global state ----
 const S = {
@@ -113,7 +127,7 @@ const S = {
   authMode: 'signin', authBusy: false, authError: '', authOk: '',
   days: [], sessions: [],
   view: 'today',
-  expanded: null, active: null, elapsed: 0, timerHandle: null,
+  expanded: null, active: null, elapsed: 0, restElapsed: 0, timerHandle: null,
   openHistoryId: null,
   detailExerciseId: null, detailPick: null, detailAll: false,
   showDone: false, doneData: null,
@@ -167,6 +181,10 @@ function orm(load, reps) { return load * (1 + (+reps || 0) / 30); }
 function mondayOf(d) { const dt = new Date(d); const day = (dt.getDay() + 6) % 7; dt.setDate(dt.getDate() - day); dt.setHours(0, 0, 0, 0); return dt; }
 function topSetOf(sets) { return sets.reduce((a, r) => (+r.weight > +a.weight ? r : a), sets[0]); }
 function dfmt(t) { return new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+function isSameCalendarDay(a, b) {
+  const x = new Date(a), y = new Date(b);
+  return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate();
+}
 function toDateInputValue(t) {
   const d = new Date(t);
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -267,6 +285,8 @@ function render() {
   `;
   const clockEl = document.getElementById('sessionClock');
   if (clockEl) clockEl.textContent = fmtClock(S.elapsed);
+  const restClockEl = document.getElementById('restClock');
+  if (restClockEl) restClockEl.textContent = fmtClock(S.restElapsed);
   S.sessionAnim = false; S.detailAnim = false;
 }
 
@@ -398,7 +418,7 @@ async function loadProfile() {
 async function loadProgram() {
   try {
     const { data, error } = await sb.from('program_days')
-      .select('id,name,sort_order,program_exercises(id,name,sets,rep_lo,rep_hi,base_weight,increment,per_leg,bodyweight,sort_order)')
+      .select('id,name,sort_order,program_exercises(id,name,description,sets,rep_lo,rep_hi,base_weight,increment,per_leg,bodyweight,sort_order)')
       .order('sort_order');
     if (error) throw error;
     S.days = (data || []).map(d => ({
@@ -418,7 +438,7 @@ async function seedDefaultProgramIfEmpty() {
     const { data: dayRow, error } = await sb.from('program_days').insert({ user_id: S.user.id, name: day.name, sort_order: i }).select().single();
     if (error) { console.error(error); continue; }
     const rows = day.exercises.map((ex, j) => ({
-      user_id: S.user.id, day_id: dayRow.id, name: ex.name, sets: ex.sets, rep_lo: ex.rep_lo, rep_hi: ex.rep_hi,
+      user_id: S.user.id, day_id: dayRow.id, name: ex.name, description: ex.description || null, sets: ex.sets, rep_lo: ex.rep_lo, rep_hi: ex.rep_hi,
       base_weight: ex.base_weight, increment: ex.increment, per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight, sort_order: j,
     }));
     await sb.from('program_exercises').insert(rows);
@@ -488,8 +508,19 @@ function viewToday() {
   const week = currentWeekIndex();
   const doneThisWeek = S.sessions.filter(s => weekIndexOf(s.performed_at) === week);
 
+  const todaysSessions = S.sessions.filter(s => isSameCalendarDay(s.performed_at, new Date()));
+  const trainedToday = todaysSessions.length > 0;
+
   let nextCard = '';
-  if (day) {
+  if (trainedToday) {
+    const lastToday = todaysSessions[todaysSessions.length - 1];
+    nextCard = `
+      <div class="card">
+        <div class="card-row"><div class="dot" style="background:${SAGE}"></div><div class="accent-label" style="color:${SAGE}">Today · Done</div></div>
+        <div class="next-name">Rest, you earned it!</div>
+        <div class="next-sub">You logged ${esc(lastToday.day_name)} today.${day ? ` Next up: ${esc(day.name)}.` : ''}</div>
+      </div>`;
+  } else if (day) {
     const shortNames = day.exercises.map(e => e.name.replace(/^Dumbbell /, 'DB ').replace(/^Barbell /, 'BB '));
     nextCard = `
       <div class="card">
@@ -701,6 +732,7 @@ function viewHistory() {
     <div class="next-name title-serif" style="font-size:40px;margin:4px 0 20px">History</div>
     <button class="log-past-btn" onclick="App.openLogPast()">+ Log a past session</button>
     ${rows || `<div class="empty"><p>Nothing logged yet.</p></div>`}
+    ${S.sessions.length ? `<button class="export-csv-btn" onclick="App.exportHistoryCsv()">Export history as CSV</button>` : ''}
   `;
 }
 
@@ -738,7 +770,7 @@ function startEditorNew(dayId) {
   S.editor = {
     id: null, dayId: day.id, dayName: day.name, date: toDateInputValue(new Date()),
     exercises: day.exercises.map(ex => ({
-      exercise_id: ex.id, name: ex.name, per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight,
+      exercise_id: ex.id, name: ex.name, description: ex.description || '', per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight,
       sets: Array.from({ length: ex.sets }, () => ({ w: '', r: '' })),
       rpe: null, note: '',
     })),
@@ -751,7 +783,7 @@ function startEditorEdit(sessionId) {
   S.editor = {
     id: s.id, dayId: s.day_id, dayName: s.day_name, date: toDateInputValue(s.performed_at), performedAt: s.performed_at,
     exercises: s.entries.map(e => ({
-      exercise_id: e.exercise_id, name: e.exercise_name, per_leg: !!e.per_leg, bodyweight: !!e.bodyweight,
+      exercise_id: e.exercise_id, name: e.exercise_name, description: (exerciseById(e.exercise_id) || {}).description || '', per_leg: !!e.per_leg, bodyweight: !!e.bodyweight,
       sets: e.sets.length ? e.sets.map(x => ({ w: String(x.weight), r: String(x.reps) })) : [{ w: '', r: '' }],
       rpe: e.rpe || null, note: e.note || '',
     })),
@@ -767,7 +799,10 @@ function removeEditorSet(exIdx, setIdx) {
   if (ex.sets.length <= 1) { ex.sets[0] = { w: '', r: '' }; } else { ex.sets.splice(setIdx, 1); }
   render();
 }
-function pickEditorRpe(exIdx, n) { S.editor.exercises[exIdx].rpe = S.editor.exercises[exIdx].rpe === n ? null : n; render(); }
+function setEditorRpeLive(exIdx, val, elId) {
+  S.editor.exercises[exIdx].rpe = +val;
+  updateRpeDisplay(elId, val);
+}
 function setEditorNote(exIdx, val) { S.editor.exercises[exIdx].note = val; }
 
 async function saveEditor() {
@@ -837,14 +872,15 @@ function editorOverlay() {
         </div>
         <button class="set-remove-btn" onclick="App.removeEditorSet(${exIdx},${j})">✕</button>
       </div>`).join('');
-    const rpes = [6, 7, 8, 9, 10].map(n => `<button class="rpe-pill ${ex.rpe === n ? 'on' : ''}" onclick="App.pickEditorRpe(${exIdx},${n})">${n}</button>`).join('');
+    const rpeId = 'rpeval-ex' + exIdx;
     return `
       <div class="editor-ex-block">
         <div class="ex-name">${esc(ex.name)}</div>
+        ${ex.description ? `<div class="ex-desc">${esc(ex.description)}</div>` : ''}
         <div class="set-headers" style="margin-top:10px"><div style="width:26px">Set</div><div style="flex:1">Weight</div><div style="flex:1">Reps</div><div style="width:34px"></div></div>
         ${rows}
         <button class="add-set-link" onclick="App.addEditorSet(${exIdx})">+ Add set</button>
-        <div class="rpe-row"><div class="rpe-label">RPE</div><div class="rpe-pills">${rpes}</div></div>
+        ${rpeSliderHtml(ex.rpe, rpeId, `App.setEditorRpeLive(${exIdx},this.value,'${rpeId}')`)}
         <input class="note-input" type="text" value="${esc(ex.note)}" oninput="App.setEditorNote(${exIdx},this.value)" placeholder="Add a note…">
       </div>`;
   }).join('');
@@ -870,6 +906,29 @@ function editorOverlay() {
       <button class="finish-btn" style="background:${ACC}" onclick="App.saveEditor()">Save session</button>
     </div>
   </div></div>`;
+}
+
+function csvField(v) {
+  const s = v == null ? '' : String(v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function exportHistoryCsv() {
+  const rows = [['exercise', 'day', 'weight', 'repetition', 'rating']];
+  [...S.sessions].forEach(s => {
+    s.entries.forEach(e => {
+      const lvl = e.rpe ? rpeLevel(e.rpe) : null;
+      e.sets.forEach(set => {
+        rows.push([e.exercise_name, s.day_name, trimNum(set.weight), set.reps, lvl ? lvl.label : '']);
+      });
+    });
+  });
+  const csv = rows.map(r => r.map(csvField).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'capacity-history-' + toDateInputValue(new Date()) + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
 function toggleHistory(id) { S.openHistoryId = S.openHistoryId === id ? null : id; render(); }
@@ -992,7 +1051,7 @@ function detailOverlay() {
         ${selSets}
         <div class="sel-stat-row">
           <div class="sel-stat"><div class="lab" style="font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)">Volume</div><div style="font-size:16px;font-weight:600;margin-top:2px">${nf(sel.vol)} kg</div></div>
-          <div class="sel-stat"><div class="lab" style="font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)">RPE</div><div style="font-size:16px;font-weight:600;margin-top:2px">${sel.entry.rpe || '—'}</div></div>
+          <div class="sel-stat"><div class="lab" style="font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)">Effort</div><div style="font-size:16px;font-weight:600;margin-top:2px;color:${sel.entry.rpe ? rpeLevel(sel.entry.rpe).color : 'inherit'}">${sel.entry.rpe ? rpeLevel(sel.entry.rpe).label : '—'}</div></div>
           <div class="sel-stat"><div class="lab" style="font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)">vs prev</div><div style="font-size:16px;font-weight:600;margin-top:2px;color:${selDeltaColor}">${selDelta}</div></div>
         </div>
         ${sel.entry.note ? `<div class="sel-note">${esc(sel.entry.note)}</div>` : ''}
@@ -1017,8 +1076,10 @@ function restoreActiveDraft() {
   const saved = lsGet('active_draft', null);
   if (saved && saved.active) {
     S.active = saved.active;
+    if (!S.active.restStartedAt) S.active.restStartedAt = S.active.startedAt; // draft saved before rest timer existed
     S.expanded = saved.expanded || null;
     S.elapsed = Math.max(0, Math.floor((Date.now() - (S.active.startedAt || Date.now())) / 1000));
+    S.restElapsed = Math.max(0, Math.floor((Date.now() - S.active.restStartedAt) / 1000));
     startTimer();
   }
 }
@@ -1029,9 +1090,10 @@ function startSession(dayId) {
   day.exercises.forEach(ex => {
     log[ex.id] = { sets: Array.from({ length: ex.sets }, () => ({ w: '', r: '', done: false })), sug: suggestFor(ex), rpe: null, note: '' };
   });
-  S.active = { localId: uuid(), dayId, dayName: day.name, log, startedAt: Date.now() };
+  S.active = { localId: uuid(), dayId, dayName: day.name, log, startedAt: Date.now(), restStartedAt: Date.now() };
   S.expanded = day.exercises[0].id;
   S.elapsed = 0;
+  S.restElapsed = 0;
   S.sessionAnim = true;
   persistActiveDraft();
   startTimer();
@@ -1042,8 +1104,11 @@ function startTimer() {
   S.timerHandle = setInterval(() => {
     if (!S.active) return;
     S.elapsed = Math.max(0, Math.floor((Date.now() - S.active.startedAt) / 1000));
+    S.restElapsed = Math.max(0, Math.floor((Date.now() - S.active.restStartedAt) / 1000));
     const el = document.getElementById('sessionClock');
     if (el) el.textContent = fmtClock(S.elapsed);
+    const restEl = document.getElementById('restClock');
+    if (restEl) restEl.textContent = fmtClock(S.restElapsed);
   }, 1000);
 }
 function stopTimer() { if (S.timerHandle) clearInterval(S.timerHandle); S.timerHandle = null; }
@@ -1061,11 +1126,42 @@ function toggleSetDone(exId, idx) {
   if (s.done) {
     if (s.w === '') s.w = String(L.sug.weight);
     if (s.r === '') s.r = String(L.sug.reps);
+    // completing a set is what starts the rest period before the next one
+    S.active.restStartedAt = Date.now();
+    S.restElapsed = 0;
   }
   persistActiveDraft();
   render();
 }
-function pickRpe(exId, n) { S.active.log[exId].rpe = n; persistActiveDraft(); render(); }
+function setRpeLive(exId, val, elId) {
+  S.active.log[exId].rpe = +val;
+  persistActiveDraft();
+  updateRpeDisplay(elId, val);
+}
+function updateRpeDisplay(elId, val) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const lvl = rpeLevel(+val);
+  el.textContent = lvl ? lvl.label : 'Not set';
+  el.style.color = lvl ? lvl.color : FAINT;
+}
+// Shared slider markup for session + editor "how did that feel" input.
+// oninputExpr does its own state mutation and live-updates the label span
+// directly (by id) rather than triggering a full render, so dragging the
+// native range thumb never gets interrupted mid-gesture.
+function rpeSliderHtml(value, elId, oninputExpr) {
+  const v = (value >= 1 && value <= 4) ? value : 2;
+  const lvl = value ? rpeLevel(value) : null;
+  return `
+    <div class="rpe-slider-wrap">
+      <div class="rpe-slider-head">
+        <div class="rpe-label">EFFORT</div>
+        <div class="rpe-slider-val" id="${elId}" style="color:${lvl ? lvl.color : FAINT}">${lvl ? lvl.label : 'Not set'}</div>
+      </div>
+      <input class="rpe-slider" type="range" min="1" max="4" step="1" value="${v}" oninput="${oninputExpr}">
+      <div class="rpe-slider-ticks"><span>Easy</span><span>Moderate</span><span>Hard</span><span>Impossible</span></div>
+    </div>`;
+}
 
 function sessionOverlay() {
   const day = S.days.find(d => d.id === S.active.dayId);
@@ -1098,13 +1194,14 @@ function sessionOverlay() {
         </div>
         <button class="done-btn ${s.done ? 'on' : ''}" onclick="App.toggleSetDone('${ex.id}',${j})">✓</button>
       </div>`).join('');
-    const rpes = [6, 7, 8, 9, 10].map(n => `<button class="rpe-pill ${L.rpe === n ? 'on' : ''}" onclick="App.pickRpe('${ex.id}',${n})">${n}</button>`).join('');
+    const rpeId = 'rpeval-' + ex.id;
     return `
       <div class="ex-card ${allDone ? 'done' : ''} ${open ? 'open' : ''}">
         <div class="ex-top" onclick="App.toggleExpand('${ex.id}')">
           <div class="ex-badge ${allDone ? 'done' : ''}">${allDone ? '✓' : i + 1}</div>
           <div style="flex:1">
             <div class="ex-name">${esc(ex.name)}</div>
+            ${ex.description ? `<div class="ex-desc">${esc(ex.description)}</div>` : ''}
             <div class="ex-prescription">${ex.sets} × ${ex.rep_lo}→${ex.rep_hi} reps${ex.per_leg ? ' per leg' : ''}</div>
           </div>
           <div class="ex-chev">${open ? '▲' : '▼'}</div>
@@ -1114,7 +1211,7 @@ function sessionOverlay() {
           <div class="hint-row"><div class="hint-tag">HINT</div><div class="hint-text">${esc(fmtWeight(ex, L.sug.weight) + ' × ' + ex.sets + '×' + L.sug.reps + ' — ' + L.sug.why)}</div></div>
           <div class="set-headers"><div style="width:26px">Set</div><div style="flex:1">Weight</div><div style="flex:1">Reps</div><div style="width:34px"></div></div>
           ${setsHtml}
-          <div class="rpe-row"><div class="rpe-label">RPE</div><div class="rpe-pills">${rpes}</div></div>
+          ${rpeSliderHtml(L.rpe, rpeId, `App.setRpeLive('${ex.id}',this.value,'${rpeId}')`)}
           <input class="note-input" type="text" value="${esc(L.note)}" oninput="App.setNote('${ex.id}',this.value)" placeholder="Add a note…">
         </div>` : ''}
       </div>`;
@@ -1129,7 +1226,10 @@ function sessionOverlay() {
           <div style="font-size:16.5px;font-weight:600;line-height:1.2">Capacity · ${esc(day.name)}</div>
           <div style="font-size:12.5px;color:var(--muted)">Week ${week} · ${filled}/${total} sets${navigator.onLine ? '' : ' · offline, saved on this device'}</div>
         </div>
-        <div id="sessionClock" style="font-size:13px;font-weight:600;color:${ACC};font-variant-numeric:tabular-nums">${fmtClock(S.elapsed)}</div>
+        <div style="text-align:right;flex-shrink:0">
+          <div id="sessionClock" style="font-size:13px;font-weight:600;color:${ACC};font-variant-numeric:tabular-nums">${fmtClock(S.elapsed)}</div>
+          <div style="font-size:10.5px;color:var(--faint);margin-top:2px;font-variant-numeric:tabular-nums">Rest <span id="restClock" style="font-weight:600;color:${SAGE}">${fmtClock(S.restElapsed)}</span></div>
+        </div>
       </div>
       <div class="sess-progress"><div class="sess-progress-fill" style="width:${pct}%"></div></div>
     </div>
@@ -1343,7 +1443,7 @@ async function applyTemplate(key) {
     const { data: dayRow, error } = await sb.from('program_days').insert({ user_id: S.user.id, name: day.name, sort_order: i }).select().single();
     if (error) { console.error(error); continue; }
     const rows = day.exercises.map((ex, j) => ({
-      user_id: S.user.id, day_id: dayRow.id, name: ex.name, sets: ex.sets, rep_lo: ex.rep_lo, rep_hi: ex.rep_hi,
+      user_id: S.user.id, day_id: dayRow.id, name: ex.name, description: ex.description || null, sets: ex.sets, rep_lo: ex.rep_lo, rep_hi: ex.rep_hi,
       base_weight: ex.base_weight, increment: ex.increment, per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight, sort_order: j,
     }));
     await sb.from('program_exercises').insert(rows);
@@ -1405,9 +1505,9 @@ async function saveAge(val) {
 function openExerciseForm(dayId, exId) {
   if (exId) {
     const ex = exerciseById(exId);
-    S.exerciseForm = { dayId, id: exId, name: ex.name, sets: ex.sets, rep_lo: ex.rep_lo, rep_hi: ex.rep_hi, base_weight: ex.base_weight, increment: ex.increment, per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight };
+    S.exerciseForm = { dayId, id: exId, name: ex.name, description: ex.description || '', sets: ex.sets, rep_lo: ex.rep_lo, rep_hi: ex.rep_hi, base_weight: ex.base_weight, increment: ex.increment, per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight };
   } else {
-    S.exerciseForm = { dayId, id: null, name: '', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 20, increment: 2.5, per_leg: false, bodyweight: false };
+    S.exerciseForm = { dayId, id: null, name: '', description: '', sets: 3, rep_lo: 8, rep_hi: 10, base_weight: 20, increment: 2.5, per_leg: false, bodyweight: false };
   }
   render();
 }
@@ -1418,13 +1518,14 @@ function toggleExField(key) { S.exerciseForm[key] = !S.exerciseForm[key]; render
 async function saveExerciseForm() {
   const f = S.exerciseForm;
   const name = (document.getElementById('exfName')?.value ?? f.name).trim();
+  const description = (document.getElementById('exfDescription')?.value ?? f.description ?? '').trim();
   const sets = Math.max(1, +(document.getElementById('exfSets')?.value ?? f.sets) || 1);
   const rep_lo = Math.max(1, +(document.getElementById('exfRepLo')?.value ?? f.rep_lo) || 1);
   const rep_hi = Math.max(rep_lo, +(document.getElementById('exfRepHi')?.value ?? f.rep_hi) || rep_lo);
   const base_weight = Math.max(0, +(document.getElementById('exfBaseWeight')?.value ?? f.base_weight) || 0);
   const increment = Math.max(0.5, +(document.getElementById('exfIncrement')?.value ?? f.increment) || 2.5);
   if (!name) { alert('Give the exercise a name.'); return; }
-  const payload = { name, sets, rep_lo, rep_hi, base_weight, increment, per_leg: f.per_leg, bodyweight: f.bodyweight };
+  const payload = { name, description: description || null, sets, rep_lo, rep_hi, base_weight, increment, per_leg: f.per_leg, bodyweight: f.bodyweight };
   if (f.id) {
     await sb.from('program_exercises').update(payload).eq('id', f.id);
   } else {
@@ -1453,6 +1554,8 @@ function exerciseFormSheet() {
       <div class="auth-title" style="font-size:26px">${f.id ? 'Edit exercise' : 'Add exercise'}</div>
       <label class="field-label" style="margin-top:16px">Name</label>
       <input class="field" id="exfName" value="${esc(f.name)}" placeholder="e.g. Barbell back squat">
+      <label class="field-label">Cue <span style="font-weight:400;color:var(--faint)">(shown on the card, ~12 words)</span></label>
+      <input class="field" id="exfDescription" value="${esc(f.description || '')}" placeholder="e.g. Bar on traps, brace, sit hips back and down.">
       <div class="form-grid">
         <div><label class="field-label">Sets</label><input class="field" id="exfSets" type="text" inputmode="numeric" value="${f.sets}"></div>
         <div><label class="field-label">Increment (kg)</label><input class="field" id="exfIncrement" type="text" inputmode="decimal" value="${trimNum(f.increment)}"></div>
@@ -1474,11 +1577,11 @@ function exerciseFormSheet() {
 
 // ---- public API ----
 window.App = {
-  setView, startSession, exitSession, toggleExpand, setField, setNote, toggleSetDone, pickRpe, finishSession,
+  setView, startSession, exitSession, toggleExpand, setField, setNote, toggleSetDone, setRpeLive, finishSession,
   openDetail, closeDetail, pickDetailIdx, toggleDetailRange,
-  toggleHistory, deleteSession,
+  toggleHistory, deleteSession, exportHistoryCsv,
   openLogPast, closePickDay, startEditorNew, startEditorEdit, closeEditor,
-  setEditorDate, setEditorSetField, addEditorSet, removeEditorSet, pickEditorRpe, setEditorNote,
+  setEditorDate, setEditorSetField, addEditorSet, removeEditorSet, setEditorRpeLive, setEditorNote,
   saveEditor, deleteEditorSession,
   closeDone, signOut, syncPendingQueue,
   addDay, renameDay, deleteDay, moveDay, saveBodyweight, saveHeight, saveAge, applyTemplate,

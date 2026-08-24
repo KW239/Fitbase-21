@@ -57,7 +57,20 @@ your account is the only one that will ever exist.
 - Missed logging a session, or forgot a set? From **History**, use **+ Log a
   past session** to backfill an old workout (pick the day and date, fill in
   sets), or open any existing session and tap **Edit session** to add/remove
-  sets, change weights/reps/RPE, fix the date, or add a note after the fact.
+  sets, change weights/reps/effort, fix the date, or add a note after the fact.
+- **Effort** (how each set felt) is a 4-level slider — Easy/Moderate/Hard/
+  Impossible, colored green through dark red — instead of a numeric RPE scale.
+  It's stored as 1-4 in the same `rpe` column, so nothing else changes.
+- Each exercise can carry a short **cue** (technique reminder, shown on its
+  card during a session) — edit it from Settings alongside the rest of the
+  exercise's details. Needs `migrations/003_add_exercise_description.sql` on
+  an existing install.
+- **Export history as CSV** from the bottom of **History** — one row per
+  logged set (exercise, day, weight, repetition, rating).
+- A **rest timer** next to the session clock tracks time since your last
+  completed set, resetting every time you mark one done.
+- Finishing your last session for the day swaps the Today tab's hero card to
+  "Rest, you earned it!" until the next calendar day.
 - **Profile tab** — weight, height, and age, plus a picker for a few
   pre-built program templates (Full Body, Push/Pull/Legs, Upper/Lower).
   Switching templates replaces your current program's days and exercises;
