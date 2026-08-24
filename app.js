@@ -105,6 +105,16 @@ const PROGRAM_TEMPLATES = [
   },
 ];
 
+// name -> cue, built from every built-in template so exercises created
+// before the cue feature existed (or added by hand without one) can be
+// backfilled by matching on name. See backfillDescriptions().
+const EXERCISE_CUE_LOOKUP = {};
+[DEFAULT_PROGRAM, ...PROGRAM_TEMPLATES.map(t => t.days)].forEach(days => {
+  days.forEach(day => day.exercises.forEach(ex => {
+    if (ex.description && !EXERCISE_CUE_LOOKUP[ex.name]) EXERCISE_CUE_LOOKUP[ex.name] = ex.description;
+  }));
+});
+
 const ACC = '#B85C3C', INK = '#241F1A', MUT = '#8B8175', SAGE = '#6F7F5F', GOLD = '#E9A03F', FAINT = '#B0A597', BORDER = '#E6DBC8', DARKRED = '#7A2E22';
 
 // How each set felt, replacing a numeric 6-10 RPE scale with four plain
@@ -1377,9 +1387,18 @@ function viewSettings() {
       <button class="add-ex-btn" onclick="App.openExerciseForm('${d.id}',null)">+ Add exercise</button>
     </div>`).join('');
 
+  const missing = missingCueCount();
+
   return `
     <div class="label-sm">Your program</div>
     <div class="next-name title-serif" style="font-size:40px;margin:4px 0 20px">Settings</div>
+
+    ${missing ? `
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:14.5px;font-weight:600">Missing exercise cues</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;line-height:1.4">${missing} exercise${missing > 1 ? 's' : ''} from your program ${missing > 1 ? "don't" : "doesn't"} have a technique cue yet — fill in the ones that match a built-in exercise automatically.</div>
+      <button class="scheme-btn" style="margin-top:12px" onclick="App.backfillDescriptions()">Fill in missing cues</button>
+    </div>` : ''}
 
     <div class="set-section">
       ${daysHtml}
@@ -1460,6 +1479,18 @@ async function applyTemplate(key) {
 async function addDay() {
   const sort_order = S.days.length ? Math.max(...S.days.map(d => d.sort_order)) + 1 : 0;
   await sb.from('program_days').insert({ user_id: S.user.id, name: 'New day', sort_order });
+  await reloadProgram();
+}
+function missingCueCount() {
+  return allExercises().filter(ex => !ex.description && EXERCISE_CUE_LOOKUP[ex.name]).length;
+}
+async function backfillDescriptions() {
+  const targets = allExercises().filter(ex => !ex.description && EXERCISE_CUE_LOOKUP[ex.name]);
+  if (!targets.length) return;
+  for (const ex of targets) {
+    const { error } = await sb.from('program_exercises').update({ description: EXERCISE_CUE_LOOKUP[ex.name] }).eq('id', ex.id);
+    if (error) { alert("Couldn't fill in cues — run migrations/003_add_exercise_description.sql in your Supabase SQL Editor if you haven't yet, then try again."); return; }
+  }
   await reloadProgram();
 }
 async function renameDay(id, name) {
@@ -1588,7 +1619,7 @@ window.App = {
   setEditorDate, setEditorSetField, addEditorSet, removeEditorSet, setEditorRpeLive, setEditorNote,
   saveEditor, deleteEditorSession,
   closeDone, signOut, syncPendingQueue,
-  addDay, renameDay, deleteDay, moveDay, saveBodyweight, saveHeight, saveAge, applyTemplate,
+  addDay, renameDay, deleteDay, moveDay, saveBodyweight, saveHeight, saveAge, applyTemplate, backfillDescriptions,
   openExerciseForm, closeExerciseForm, setExField, toggleExField, saveExerciseForm, deleteExerciseForm,
 };
 
