@@ -545,7 +545,7 @@ function viewToday() {
         <div class="day-tick" style="border-color:${done ? SAGE : BORDER};background:${done ? SAGE : 'transparent'}">${done ? '✓' : ''}</div>
         <div class="day-body">
           <div class="day-name">${esc(d.name)}</div>
-          <div class="day-sub">${d.exercises.map(e => e.name.split(' ')[0]).slice(0, 3).join(' · ')}</div>
+          <div class="day-sub">${esc(d.exercises.map(e => e.name.split(' ')[0]).slice(0, 3).join(' · '))}</div>
         </div>
         <div class="day-right">${done ? 'Logged' : 'Start →'}</div>
       </button>`;
@@ -748,7 +748,7 @@ function pickDayOverlay() {
     <button class="day-pick-btn" onclick="App.startEditorNew('${d.id}')">
       <div class="day-body">
         <div class="day-name">${esc(d.name)}</div>
-        <div class="day-sub">${d.exercises.map(e => e.name).join(' · ')}</div>
+        <div class="day-sub">${esc(d.exercises.map(e => e.name).join(' · '))}</div>
       </div>
     </button>`).join('');
   return `
@@ -909,7 +909,11 @@ function editorOverlay() {
 }
 
 function csvField(v) {
-  const s = v == null ? '' : String(v);
+  let s = v == null ? '' : String(v);
+  // Neutralize spreadsheet formula injection: a cell starting with =, +, -,
+  // or @ can execute as a formula when the CSV is opened in Excel/Sheets.
+  // Prefixing with a leading apostrophe forces it to be read as plain text.
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
   return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 function exportHistoryCsv() {
