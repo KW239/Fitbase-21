@@ -103,6 +103,27 @@ const PROGRAM_TEMPLATES = [
       ]},
     ],
   },
+  {
+    key: 'peak', name: 'Peak',
+    blurb: "3 days · 4-week peaking block to test a 1RM — start with heavy triples, strip a rep and add ~5% weight each week. Suggestions here won't track the usual way (see note after picking it).",
+    days: [
+      { name: 'Day 1', exercises: [
+        { name: 'Barbell back squat', description: 'Heavy triple. Remove a rep, add 5% weight weekly.', sets: 3, rep_lo: 1, rep_hi: 3, base_weight: 85, increment: 5 },
+        { name: 'Bench press', description: '5 sets. Remove a rep, add 5% weight weekly.', sets: 5, rep_lo: 1, rep_hi: 3, base_weight: 60, increment: 2.5 },
+        { name: 'Deadlift', description: 'Heavy triple. Remove a rep, add 5% weight weekly.', sets: 3, rep_lo: 1, rep_hi: 3, base_weight: 100, increment: 5 },
+      ]},
+      { name: 'Day 2', exercises: [
+        { name: 'Paused squat', description: "Paused, about 10% lighter than Day 1's squat.", sets: 3, rep_lo: 1, rep_hi: 3, base_weight: 75, increment: 5 },
+        { name: 'Paused bench press', description: "Paused, about 10% lighter than Day 1's bench.", sets: 3, rep_lo: 1, rep_hi: 3, base_weight: 55, increment: 2.5 },
+        { name: 'Paused deadlift', description: "Paused, about 10% lighter than Day 1's deadlift.", sets: 3, rep_lo: 1, rep_hi: 3, base_weight: 90, increment: 5 },
+      ]},
+      { name: 'Day 3', exercises: [
+        { name: 'Barbell back squat', description: 'About 10% lighter than Day 1, same rep scheme.', sets: 3, rep_lo: 1, rep_hi: 3, base_weight: 75, increment: 5 },
+        { name: 'Bench press', description: 'About 10% lighter than Day 1, same rep scheme.', sets: 3, rep_lo: 1, rep_hi: 3, base_weight: 55, increment: 2.5 },
+        { name: 'Deadlift', description: 'About 10% lighter than Day 1, same rep scheme.', sets: 3, rep_lo: 1, rep_hi: 3, base_weight: 90, increment: 5 },
+      ]},
+    ],
+  },
 ];
 
 // name -> cue, built from every built-in template so exercises created

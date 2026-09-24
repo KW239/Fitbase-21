@@ -72,12 +72,17 @@ your account is the only one that will ever exist.
 - Finishing your last session for the day swaps the Today tab's hero card to
   "Rest, you earned it!" until the next calendar day.
 - **Profile tab** — weight, height, and age, plus a picker for a few
-  pre-built program templates (Full Body, Push/Pull/Legs, Upper/Lower).
+  pre-built program templates (Full Body, Push/Pull/Legs, Upper/Lower, Peak).
   Switching templates replaces your current program's days and exercises;
   logged history is kept (it's snapshotted per session), but progress
   suggestions for a lift start fresh if it isn't in the new template under
   the same tracked exercise. Needs a connection to switch (it's a
   structural change, not something that can be queued offline).
+  **Peak** is a 4-week squat/bench/deadlift block for testing a 1RM (triples
+  down to singles, weight increasing weekly) — the opposite progression
+  direction from every other template, so the built-in weight/rep
+  suggestions won't track it meaningfully; use the per-exercise cue text
+  and your own math for that one instead.
 - **Works with no signal.** The app caches your program and history on the
   device after each successful load, so opening it offline still works off
   the last-known data. Anything you log while offline (or if a save fails
