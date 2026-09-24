@@ -1476,21 +1476,28 @@ async function applyTemplate(key) {
   if (!tpl) return;
   if (!navigator.onLine) { alert("You're offline — switching programs needs a connection. Try again once you're back online."); return; }
   if (!confirm(`Switch to "${tpl.name}"? This replaces your current program's days and exercises. Your logged history is kept.`)) return;
-  // Cascading delete removes program_exercises too; session_entries keep a
-  // name snapshot and just lose the FK link (on delete set null) — history
-  // itself is untouched.
-  for (const day of S.days) {
-    await sb.from('program_days').delete().eq('id', day.id);
-  }
-  for (let i = 0; i < tpl.days.length; i++) {
-    const day = tpl.days[i];
-    const { data: dayRow, error } = await sb.from('program_days').insert({ user_id: S.user.id, name: day.name, sort_order: i }).select().single();
-    if (error) { console.error(error); continue; }
-    const rows = day.exercises.map((ex, j) => ({
-      user_id: S.user.id, day_id: dayRow.id, name: ex.name, description: ex.description || null, sets: ex.sets, rep_lo: ex.rep_lo, rep_hi: ex.rep_hi,
-      base_weight: ex.base_weight, increment: ex.increment, per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight, sort_order: j,
-    }));
-    await sb.from('program_exercises').insert(rows);
+  try {
+    // Cascading delete removes program_exercises too; session_entries keep a
+    // name snapshot and just lose the FK link (on delete set null) — history
+    // itself is untouched.
+    for (const day of S.days) {
+      const { error } = await sb.from('program_days').delete().eq('id', day.id);
+      if (error) throw error;
+    }
+    for (let i = 0; i < tpl.days.length; i++) {
+      const day = tpl.days[i];
+      const { data: dayRow, error } = await sb.from('program_days').insert({ user_id: S.user.id, name: day.name, sort_order: i }).select().single();
+      if (error) throw error;
+      const rows = day.exercises.map((ex, j) => ({
+        user_id: S.user.id, day_id: dayRow.id, name: ex.name, description: ex.description || null, sets: ex.sets, rep_lo: ex.rep_lo, rep_hi: ex.rep_hi,
+        base_weight: ex.base_weight, increment: ex.increment, per_leg: !!ex.per_leg, bodyweight: !!ex.bodyweight, sort_order: j,
+      }));
+      const { error: exErr } = await sb.from('program_exercises').insert(rows);
+      if (exErr) throw exErr;
+    }
+  } catch (err) {
+    console.error('applyTemplate failed', err);
+    alert("Switching programs didn't fully complete (" + (err?.message || 'unknown error') + "). Your program may be partly old, partly new — check Settings, and try switching again.");
   }
   await loadProgram();
   S.view = 'today';
